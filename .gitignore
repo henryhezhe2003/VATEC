@@ -1,0 +1,10 @@
+*.iml
+.idea/
+target/
+*dat.txt
+*.bak
+*.bk
+*.csv
+*.DS_Store
+lvg2015/
+lvg2015data/
