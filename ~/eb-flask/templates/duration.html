@@ -439,9 +439,8 @@ function showLoading() {
 <table>
 	<tr>
 		<td>
-			<FORM action="{{ url_for('vatec_main') }}" method="post" onsubmit='showLoading();'>
-				<button type="submit" name="button2" style="height: 40px; width: 200px;" value=" Choose another variable " onclick="if (check_input()){show_loading();}else return false;"><font size = 2>Choose another condition</font></button>
-				
+			<FORM action="{{ url_for('vatec_main') }}" method="post">
+				<button type="submit" name="button2" style="height: 40px; width: 200px;" value=" Choose another variable" ><font size = 2>Choose another condition</font></button>
 			</FORM>
 		</td>
 		<td>
@@ -449,27 +448,19 @@ function showLoading() {
 				<button type="submit" id="button_csv" name="button_csv" style="height: 40px; width: 200px;" value=" Download output in csv "><font size = 2> Export output in CSV </font> </button>
 			</FORM>
 		</td>
-		
-		<!--
-		<td>
-			<FORM>
-				<BUTTON Type="button" VALUE=" Change the options " style="height: 40px; width: 150px;" onClick="history.go(-1);return true;"> <font size = 2>Change the options </font></BUTTON></FORM>
-		</td>
-		-->
-		
-		
-		<td>
-			<FORM action="{{ url_for('build_query') }}" method="post" onsubmit='showLoading();'>
-				<BUTTON Type="submit" style="height: 40px; width: 150px;" VALUE=" Clear the options " onclick="if (check_input()){show_loading();}else return false;"> <font size = 2>Clear the options </font></BUTTON>
-				<input type="text" value = '{{var}}' id="variable" name="variable" style="display:none;">
-					<input type="text" value = '{{disease}}' id="disease" name="disease" style="display:none;">
-						</FORM>
-		</td>
-	
-		
+		<!-- -->
+		<!--<td>-->
+			<!--<FORM action="{{ url_for('build_query') }}" method="post" onsubmit='showLoading();'>-->
+				<!--<BUTTON Type="submit" style="height: 40px; width: 150px;" VALUE=" Clear the options " onclick="if (check_input()){show_loading();}else return false;"> <font size = 2>Clear the options </font></BUTTON>-->
+				<!--<input type="text" value = '{{var}}' id="variable" name="variable" style="display:none;">-->
+					<!--<input type="text" value = '{{disease}}' id="disease" name="disease" style="display:none;">-->
+						<!--</FORM>-->
+		<!--</td>-->
+	<!-- -->
+		<!-- -->
 	</tr>
 </table>
- 
+
 
 <FORM action="" method="post">
 		<input type="text" id="hidden_options" name="hidden_options" style="display:none;">
@@ -480,173 +471,13 @@ function showLoading() {
 
 <BR>
 
-<div id="result">
-	{% if value_range_output %}
-		<script type="text/javascript">
-		//document.getElementById("loading").style.display = "none";
-		</script>
-		{{ value_range_output|safe }}
-	{% endif %}
-</div>
 
 <BR>
-<!--
-<div id="result">
-	{% if enrollment %}
-		<script type="text/javascript">
-		document.getElementById("loading").style.display = "none";
-		</script>
-		Total enrollment of clinical trials containing variable {{cur_var}} (value range: {{lower_value}} to {{upper_value}}) is  {{ enrollment|safe }}
-	{% endif %}
-</div>
--->
-
-
-<div id="result">
-	{% if num_of_trials_output %}
-	<script type="text/javascript">
-		//document.getElementById("loading").style.display = "none";
-		</script>
-	{{num_of_trials_output|safe}}
-	{% endif %}
-
-	{% if phases or conditions or statuses or study_types or intervention_types or agency_types or gender%}
-	Options:<BR><BR>
-	{% endif %}
-
-	{% if phases %}
-	<script type="text/javascript">
-	//document.getElementById("loading").style.display = "none";
-	</script>
-	Phases: {{ phases|safe }}
-	<BR>
-	{% endif %}
-
-	{% if conditions %}
-	<script type="text/javascript">
-	//document.getElementById("loading").style.display = "none";
-	</script>
-	Conditions : {{ conditions|safe }}
-	<BR>
-	{% endif %}
-	{% if statuses %}
-	<script type="text/javascript">
-	//document.getElementById("loading").style.display = "none";
-	</script>
-	Statuses : {{ statuses|safe }}
-	<BR>
-	{% endif %}
-
-	{% if study_types %}
-	<script type="text/javascript">
-	//document.getElementById("loading").style.display = "none";
-	</script>
-	Study types : {{ study_types|safe }}
-	<BR>
-	{% endif %}
-	{% if intervention_types %}
-	<script type="text/javascript">
-	//document.getElementById("loading").style.display = "none";
-	</script>
-	Intervention types : {{ intervention_types|safe }}
-	<BR>
-	{% endif %}
-	{% if agency_types %}
-	<script type="text/javascript">
-	//document.getElementById("loading").style.display = "none";
-	</script>
-	Sponsor types : {{ agency_types|safe }}
-	<BR>
-	{% endif %}
-	{% if gender %}
-	<script type="text/javascript">
-	document.getElementById("loading").style.display = "none";
-	</script>
-	Gender : {{ gender|safe }}
-	<BR>
-	{% endif %}
-	{% if minimum_age != "" %}
-	<script type="text/javascript">
-		document.getElementById("loading").style.display = "none";
-		</script>
-	Minimum age : {{ minimum_age|safe }}
-	<BR>
-	{% endif %}
-	{% if maximum_age != "" %}
-	<script type="text/javascript">
-		document.getElementById("loading").style.display = "none";
-		</script>
-	Maximum age : {{ maximum_age|safe }}
-	<BR>
-	{% endif %}
-	{% if start_date %}
-	<script type="text/javascript">
-		document.getElementById("loading").style.display = "none";
-		</script>
-	Start date after : {{ start_date|safe }}
-	<BR>
-	{% endif %}
-	{% if start_date_before %}
-	<script type="text/javascript">
-		document.getElementById("loading").style.display = "none";
-		</script>
-	Start date before : {{ start_date_before|safe }}
-	<BR>
-	{% endif %}
-	{% if intervention_models %}
-	<script type="text/javascript">
-		document.getElementById("loading").style.display = "none";
-		</script>
-	Intervention models : {{ intervention_models|safe }}
-	<BR>
-	{% endif %}
-	{% if allocations %}
-	<script type="text/javascript">
-		document.getElementById("loading").style.display = "none";
-		</script>
-	Allocations : {{ allocations|safe }}
-	<BR>
-	{% endif %}
-	
-</div>
-
-
-
-<!--
-value spectrum
-{{ value_spectrum_output|safe }}
-
-enrollment_spectrum
-{{ enrollment_spectrum_output|safe }}
-
-detail_enrollment_spectrum
-{{ detail_enrollment_spectrum_output|safe }}
- 
-value range width
-{{value_range_width_distribution_output|safe}}
- 
- modal boundary output
- {{ modal_boundary_output|safe }}
- 
- value_range_distribution_output
- {{ value_range_distribution_output|safe }}
- 
- value_range_width_distribution_output
- {{ value_range_width_distribution_output|safe }}
--->
-
 
 <BR>
 <!--<div id="loading">Processing ...</div>-->
 <div id="result">
 	{% if modal_boundary_output_simple %}
-
-		<script type="text/javascript">
-			//document.getElementById("loading").style.display = "none";
-		</script>
-
-				<BR>
-		
 		<!-- Google chart API -->
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 		<script type="text/javascript">
@@ -912,20 +743,6 @@ value range width
 
 	
 </div>
-	{% endif %}
-<!--
-<div id="result">
-	<br>
-	<br>
-
- {% if query_used %}
-	<script type="text/javascript">
-		document.getElementById("loading").style.display = "none";
-	</script>
-	 Query_used: {{ query_used|safe }}
-	{% endif %}
-	
-</div>
--->
+{% endif %}
 
 {%endblock%}

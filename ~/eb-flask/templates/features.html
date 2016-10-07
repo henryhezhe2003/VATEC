@@ -582,36 +582,38 @@ function change_option(){
 	<div id='loadingmsg' style='display: none;'>Analyzing, please wait (normally within 30 seconds)... </div>
 	<div id='loadingover' style='display: none;'></div>
 
-	{% if diseases_list %}
-	<FORM action="{{ url_for('build_query') }}" method="post" onsubmit='showLoading();'>
-		
-		Condition: <SELECT id="disease" name="disease">
-					<optgroup label="Please choose a disease to start">
-					<!-- <option value = ''>Please choose a condition</option> -->
-					{% for dis in diseases_list %}
-						<option value = '{{dis}}' {% if cur_var == '{{dis}}': %}selected{% endif %}> {{dis}} </option>
-					{% endfor %}
-				</SELECT>
-		<br>
-		
-		OR <BR>
-		
-		<input type="button" name="answer" value="Type a condition" onclick="showDiv()" style="height: 120px; width: 300px; font-size:20px" />
-		<br>
-		<br>
-		<div id="diseaseDiv"  style="display:none;" class="answer_list" >
-			<!-- auto complete the condition field -->
-			<div class="ui-widget">
-				<label for="tags">Type a condition: </label>
-				<input id="tags" name="typed_disease">
-					</div>
-			<span style=color:grey>Note: it is mandatory that you click on one suggested condition in the list.</span>
-			<br><br>
-			
-		</div>
+	{% if distribution_numeric_features %}
+		<b>Condition</b>: {{disease}} <br>
+		<b>Number of UMLS terms</b>: {{num_trials_with_disease}} <br><br>
 
-	<INPUT type="submit" name="button2" width='200px' value=" Process " onclick="if (check_condition()){show_loading();}else return false;">&nbsp;&nbsp;&nbsp;
-	<input type="text" id="hidden_options" name="hidden_options" style="display:none;">
+		<table border = 1 class="CSSTableGenerator">
+			<tr><td><b>UMLS term (TUI)</b></td><td><b>CUI</b></td><td><b>Frequency</b></td></tr>
+			{% for name, sty, cui, freq in distribution_numeric_features %}
+			<tr><td>{{name}}({{sty}})</td><td>{{cui}}</td><td>{{freq}}</td></tr>
+			{% endfor %}
+		</table>
+
+		<br>
+		{% if distribution_numeric_features %}
+			<FORM action="{{ url_for('analysis') }}" method="post" onsubmit='showLoading();'>
+				<input type="hidden" name="disease" value="{{ disease }}">
+				<input type="hidden" name="filter_builder" value="{{ filter_builder }}">
+				<b>Quantitative Eligibility Features</b>:
+				<SELECT id="featureInfo" name="featureInfo">
+					<optgroup label="Please choose a variable to start">
+						{% for name, sty,cui, freq in distribution_numeric_features %}
+							<option value = "{{cui}} {{sty}} {{name}}"> {{name}}({{sty}}) {{freq}}</option>
+						{% endfor %}
+					</optgroup>
+				</SELECT>
+				<br>
+				<br>
+				<INPUT type="submit" name="button2" width='200px' value=" Process " onclick="if (check_input()){show_loading();}else return false;">&nbsp;&nbsp;&nbsp;
+				<input type="text" id="hidden_options" name="hidden_options" style="display:none;">
+			</FORM>
+		{% endif %}
 	{% endif %}
+	
+
 
 {%endblock%}

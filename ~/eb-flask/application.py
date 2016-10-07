@@ -56,17 +56,219 @@ def vatec_main():
 
 @application.route('/features',methods=['POST','GET'])
 def show_frequent_features():
-    topk = flask.request.form['topk']
+    var, aggregator_output, minimum_value, maximum_value, lower, upper, value_range_verification_output, enrollment_value, value_spectrum_output, num_trials, phase_query, condition_query, query_used, phases, conditions, status_query, statuses, study_type_query, study_types, intervention_type_query, intervention_types, agency_type_query, agency_types, gender_query, gender, modal_boundary_output, enrollment_spectrum_output, num_of_trials_output, detail_enrollment_spectrum_output,value_spectrum_output_trial_ids, initial_value_spectrum, on_option_page, start_date_query, start_date, age_query, value_range_distribution_output,value_range_width_distribution_output, average_enrollment_spectrum_output, disease, intervention_model_query, allocation_query, intervention_models, allocations, time_perspective_query, time_perspectives, start_date_before, disease_query = '', "", '', '', '', '', '', '', "", [], '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', "", "", "", "", "", "", '', '', '', '', "", "", "", '', '','','','','','','',''
 
+    topk = flask.request.form['topk']
     disease = flask.request.form['disease']
-    typed_disease = flask.request.form['typed_disease']
-    if(disease == '' and typed_disease !=''):
-        disease = typed_disease
+
+    width_option = flask.request.form.get('width_option',False)
+    fixed_width = flask.request.form.get('fixed_width',None)
+    condition_option = flask.request.form.get('conditions',None)
+    plot_type = flask.request.form.get('plot_type',None)
+    start_month_option = flask.request.form.get('start_month',None)
+    start_year_option = flask.request.form.get('start_year',None)
+    start_month_before_option = flask.request.form.get('start_month_before',None)
+    start_year_before_option = flask.request.form.get('start_year_before',None)
+    minimum_age_option = flask.request.form.get('minimum_age',None)
+    maximum_age_option = flask.request.form.get('maximum_age',None)
+    gender = flask.request.form.get('gender',None)
+    aggregate_analysis_type = flask.request.form.get('aggregate_analysis_type',None)
+
+    phase_option = flask.request.form.getlist('phase', None)
+    status_option = flask.request.form.getlist('status', None)
+    study_type_option = flask.request.form.getlist('study_types', None)
+    intervention_type_option = flask.request.form.getlist('intervention_types', None)
+    agency_type_option = flask.request.form.getlist('agency_types', None)
+    intervention_model_option = flask.request.form.getlist('intervention_model', None)
+    allocation_option = flask.request.form.getlist('allocation', None)
+    time_perspective_option = flask.request.form.getlist('time_perspective', None)
+
+    conditions = condition_option
+
+    # the list of trial IDs if the condition is not indexed in COMPACT
+    trial_ids_with_conditions = []
 
     db = mysql.connect()
     cur = db.cursor()
 
-    num_trials_with_disease_sql = "select count(cui) from cancer_cui where task = '%s' and pattern != 'None' " %(disease)
+    disease_query = ""
+    if (len(condition_option) != 0):
+        list_of_diseases = []
+        all_diseases_query = "select distinct task from cancer_cui"
+        cur.execute(all_diseases_query)
+        for row in cur.fetchall():
+            list_of_diseases.append(row[0])
+
+        if condition_option in list_of_diseases:
+            # generate the part of query containing the condition field
+            #disease_query = " T.tid in (select tid from all_diseases_trials where disease='%s')" %condition_option
+            disease_query = " (V.task='%s')" %condition_option
+        else:
+            # trial_ids_with_conditions only deals with disease name not in the disease_list table or multiple diseases in the condition field
+            disease_query = " (T.conditions LIKE '%%')"
+            trial_ids_with_conditions = get_disease_clinical_trials(condition_option)
+    else:
+        disease_query = " (T.conditions LIKE '%%')"
+
+    # check phase option and generate part of the query
+    phase_query = ""
+    if (len(phase_option) == 0):
+        phase_query += " (T.phase LIKE '%%')"
+    else:
+        phase_query += " ("
+        for phase in phase_option:
+            phase_query += " T.phase LIKE '%s'" % (phase) +" OR"
+            phases += phase + "/ "
+        # this is not meaningful, just to terminate the part of the query
+        phase_query += " T.phase LIKE '%terminated%')"
+
+    # check status option and generate part of the query
+    if (len(status_option) == 0):
+        status_query += " (T.overall_status LIKE '%%')"
+    else:
+        status_query += " ("
+        for status in status_option:
+            if (status == "Open Studies"):
+                status_query += " T.overall_status = 'Recruiting' OR T.overall_status = 'Not yet recruiting' OR"
+            elif (status == "Closed Studies"):
+                status_query += " T.overall_status = 'Active, not recruiting' OR T.overall_status = 'Active, not recruiting' OR T.overall_status = 'Completed' OR T.overall_status = 'Withdrawn' OR T.overall_status = 'Suspended' OR T.overall_status = 'Terminated' OR T.overall_status = 'Enrolling by invitation' OR"
+            else:
+                status_query += " T.overall_status = '%s'" % (status) + " OR"
+            statuses += status + "/ "
+        # this is not meaningful, just to terminate the part of the query
+        status_query += " T.overall_status LIKE '%reterminated%')"
+
+    # check study type option and generate part of the query
+    if (len(study_type_option) == 0):
+        study_type_query = " (T.study_type LIKE '%%')"
+    else:
+        study_type_query += " ("
+        for study_type in study_type_option:
+            study_type_query += " T.study_type = '%s'" %(study_type) +" OR"
+            study_types += study_type + "/ "
+        study_type_query += " T.study_type LIKE '%terminated%')"
+
+    # check intervention type option and generate part of the query
+    if (len(intervention_type_option) == 0):
+        intervention_type_query = " (T.intervention_type LIKE '%%')"
+    else:
+        intervention_type_query += " ("
+        for intervention_type in intervention_type_option:
+            intervention_type_query += " T.intervention_type = '%s'" %(intervention_type) + " OR"
+            intervention_types += intervention_type + "/ "
+        intervention_type_query += " T.intervention_type LIKE '%terminated%')"
+
+    # check agency type option and generate part of the query
+    if (len(agency_type_option) == 0):
+        agency_type_query = " (T.agency_type LIKE '%%')"
+    else:
+        agency_type_query += " ("
+        for agency_type in agency_type_option:
+            agency_type_query += " T.agency_type LIKE '%%%s%%'" %(agency_type) + " OR"
+            agency_types += agency_type + "/ "
+        agency_type_query += " T.agency_type LIKE '%terminated%')"
+
+    # check agency type option and generate part of the query
+    if (gender == '' or gender == 'all'):
+        gender_query = " (T.gender LIKE '%%')"
+    else:
+        gender_query = " (T.gender = '%s'" %(gender) + ")"
+
+    # check start_year_option start_month_option and generate start_date_query
+    if (start_year_option == '' or start_month_option == '' or start_month_option == 'N/A'):
+        start_date_query = " (T.start_date LIKE '%%')"
+    else:
+        start_date = str(start_month_option) + " " + str(start_year_option)
+        start_date_query = " (STR_TO_DATE(T.start_date,'%%M %%Y') >= STR_TO_DATE('%s'" %(start_date) +",'%M %Y'))"
+
+    if (start_year_before_option != '' and start_month_option != ''):
+        start_date_before = str(start_month_before_option) + " " + str(start_year_before_option)
+        start_date_query += " and (STR_TO_DATE(T.start_date,'%%M %%Y') <= STR_TO_DATE('%s'" %(start_date_before) +",'%M %Y'))"
+
+    # check minimum_age, maximum_age and generate age_query
+
+    minimum_age = 0
+    maximum_age = 150
+
+    if (minimum_age_option != ''):
+        try:
+            minimum_age = float(minimum_age_option)
+        except TypeError:
+            minimum_age = 0
+
+    if (maximum_age_option != ''):
+        try:
+            maximum_age = float(maximum_age_option)
+        except TypeError:
+            maximum_age = 150
+
+    #age_query = " (T.minimum_age_in_year >= %.9f" %float(minimum_age) +" and T.maximum_age_in_year <= %.9f)" %float(maximum_age)
+    age_query = ("1=1")
+
+
+    # check intervention model option and generate part of the query
+    if (len(intervention_model_option) == 0):
+        intervention_model_query = " (T.intervention_model LIKE '%%')"
+    else:
+        intervention_model_query += " ("
+        for intervention_model in intervention_model_option:
+            intervention_model_query += " T.intervention_model LIKE '%%%s%%'" %(intervention_model) + " OR"
+            intervention_models += intervention_model + "/ "
+        intervention_model_query += " T.intervention_model LIKE '%terminated%')"
+
+    # check allocation option and generate part of the query
+    if (len(allocation_option) == 0):
+        allocation_query = " (T.allocation LIKE '%%')"
+    else:
+        allocation_query += " ("
+        for allocation in allocation_option:
+            allocation_query += " T.allocation LIKE '%%%s%%'" %(allocation) + " OR"
+            allocations += allocation + "/ "
+        allocation_query += " T.allocation LIKE '%terminated%')"
+
+    # check time perspective option and generate part of the query
+    if (len(time_perspective_option) == 0):
+        #time_perspective_query = " (T.time_perspective LIKE '%%')"
+        time_perspective_query = " (1=1)"
+    else:
+        time_perspective_query += " ("
+        for time_perspective in time_perspective_option:
+            time_perspective_query += " T.time_perspective LIKE '%%%s%%'" %(time_perspective) + " OR"
+            time_perspectives += time_perspective + "/ "
+        time_perspective_query += " T.time_perspective LIKE '%terminated%')"
+
+    value_range_error = False
+
+    # get the total enrollment of trials contaning the variable in the certain range
+    enrollment_value = 0
+
+
+    # start the aggregate analysis
+
+    # get the total number of trials meeting the requirements
+    trials_meeting_requirement = ()
+
+
+    # generate distribution of values in the certain range
+    if width_option:
+        width = 0
+    else:
+        if fixed_width is None:
+            width = 0.5
+        else:
+            try:
+                width = float(fixed_width)
+            except ValueError:
+                width = 0.5
+
+    #sql = "SELECT distinct V.TID, V.month FROM cancer_cui V, meta T where %s" %(curr_condition) + " and T.tid = V.tid and "+ phase_query + " and "+ status_query + " and "+ study_type_query + " and "+ intervention_type_query + " and "+ agency_type_query + " and "+ gender_query + " and "+ start_date_query + " and "+ age_query + " and "+ intervention_model_query + " and "+ allocation_query + " and "+ time_perspective_query + " and "+ disease_query
+    filter_builder = " T.tid = V.tid and "+ phase_query + " and "+ status_query + " and "+ study_type_query + " and "+ intervention_type_query + " and "+ agency_type_query + " and "+ gender_query + " and "+ start_date_query + " and "+ age_query + " and "+ intervention_model_query + " and "+ allocation_query + " and "+ time_perspective_query + " and "+ disease_query
+    #
+    # sql = "SELECT V.month, count(*), count(distinct V.tid) FROM cancer_cui V, meta T where %s" % (filter_builder)
+    # print sql
+
+    num_trials_with_disease_sql = "select count(V.cui) from cancer_cui V, meta T where V.task = '%s' and %s " %(disease, filter_builder)
+    print(num_trials_with_disease_sql)
     cur.execute(num_trials_with_disease_sql)
     num_trials_with_disease = ''
     for row in cur.fetchall():
@@ -74,7 +276,8 @@ def show_frequent_features():
 
     if topk == 'all':
         topk = '100000000000' # big enough  number
-    frequent_numeric_feature_sql = "select cui,sty,cui_str,count(*) as freq from cancer_cui where task = '%s' and pattern != 'None' group by cui,sty order by freq desc limit %s " % (disease,topk)
+    frequent_numeric_feature_sql = "select V.cui,V.sty,V.cui_str,count(*) as freq from cancer_cui V, meta T where task = '%s' and %s group by V.cui,V.sty order by freq desc limit %s " % (disease,filter_builder,topk)
+    print frequent_numeric_feature_sql
     cur.execute(frequent_numeric_feature_sql)
 
     distribution_numeric_features = []
@@ -83,7 +286,7 @@ def show_frequent_features():
         distribution_numeric_features.append((row[2],row[1], row[0],row[3]))
     if db.open:
         db.close()
-    return flask.render_template('index.html', **locals())
+    return flask.render_template('features.html', **locals())
 
 
 
@@ -94,31 +297,22 @@ def build_query():
     var, aggregator_output, minimum_value, maximum_value, lower, upper, value_range_verification_output, enrollment_value, value_spectrum_output, num_trials, phase_query, condition_query, query_used, phases, conditions, status_query, statuses, study_type_query, study_types, intervention_type_query, intervention_types, agency_type_query, agency_types, gender_query, gender, modal_boundary_output, enrollment_spectrum_output, num_of_trials_output, detail_enrollment_spectrum_output,value_spectrum_output_trial_ids, initial_value_spectrum, on_option_page, start_date_query, start_date, age_query, value_range_distribution_output,value_range_width_distribution_output, average_enrollment_spectrum_output, disease, intervention_model_query, allocation_query, intervention_models, allocations, time_perspective_query, time_perspectives, start_date_before = '', "", '', '', '', '', '', '', "", [], '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', "", "", "", "", "", "", '', '', '', '', "", "", "", '', '','','','','','',''
 
     disease = flask.request.form['disease']
-    cuisty = str(flask.request.form['featureInfo']).strip().split()
-    cui = cuisty[0]
-    sty = cuisty[1]
-    name = cuisty[2]
-    #cur = mysql.connect().cursor()
+    typed_disease = flask.request.form['typed_disease']
+    if(disease == '' and typed_disease !=''):
+        disease = typed_disease
+
     db = mysql.connect()
     cur = db.cursor()
 
-    curr_condition = "task = '%s' and cui='%s' and sty = '%s' and pattern != 'None'"  %(disease, cui, sty)
+    curr_condition = "task = '%s'"  %(disease)
     curr_tid = "SELECT distinct tid from cancer_cui where %s" %(curr_condition)
     # get number of trials of the selected disease
-    sql1 = "SELECT count(cui) FROM cancer_cui where task = '%s' and cui='%s' and sty = '%s' and pattern != 'None' " %(disease, cui, sty)
+    sql1 = "SELECT count(cui) FROM cancer_cui where %s " %(curr_condition)
     cur.execute(sql1)
     total_num = 0
     for row in cur.fetchall():
         total_num = int(row[0])
-        aggregator_output += "There are <span style=color:red>%s</span> "  % (total_num) + " UMLS terms containing <span style=color:red>%s(%s)</span>" %(cui,sty) + "<br><br>"
-
-    # get the minimum value and maximum value for the variable
-    sql2 = "SELECT min(duration),max(duration) FROM cancer_cui where task = '%s' and cui='%s' and sty = '%s' and pattern != 'None' " %(disease, cui, sty)
-
-    cur.execute(sql2)
-    for row2 in cur.fetchall():
-        minimum_value = row2[0]
-        maximum_value = row2[1]
+        aggregator_output += "There are <span style=color:red>%s</span> "  % (total_num) + " UMLS terms for condition <span style=color:red>%s</span> <br><br>" % (disease)
 
     # get distribution of study types
     distribution_study_type = {}
@@ -314,7 +508,7 @@ def build_query():
         distribution_time_perspective["N/A"] = "0"
 
     # generate initial value specturm
-    initial_value_spectrum, upper_value, lower_value = generate_initial_value_spectrum(cur, cui,sty, disease)
+    #initial_value_spectrum, upper_value, lower_value = generate_initial_value_spectrum(cur, cui,sty, disease)
 
     if db.open:
         db.close()
@@ -327,288 +521,42 @@ def build_query():
 
 @application.route('/analysis',methods=['POST','GET'])
 def analysis():
-
-
-    var, aggregator_output, minimum_value, maximum_value, lower, upper, value_range_verification_output, enrollment_value, value_spectrum_output, num_trials, phase_query, condition_query, query_used, phases, conditions, status_query, statuses, study_type_query, study_types, intervention_type_query, intervention_types, agency_type_query, agency_types, gender_query, gender, modal_boundary_output, enrollment_spectrum_output, num_of_trials_output, detail_enrollment_spectrum_output,value_spectrum_output_trial_ids, initial_value_spectrum, on_option_page, start_date_query, start_date, age_query, value_range_distribution_output,value_range_width_distribution_output, average_enrollment_spectrum_output, disease, intervention_model_query, allocation_query, intervention_models, allocations, time_perspective_query, time_perspectives, start_date_before, disease_query = '', "", '', '', '', '', '', '', "", [], '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', "", "", "", "", "", "", '', '', '', '', "", "", "", '', '','','','','','','',''
-
-    # define CSV outpout file
-    global csv_result
-    csv_result = []
-
     disease = flask.request.form['disease']
-    featureName = flask.request.form['featureName']
-    var = curr_condition = str(flask.request.form['variable']).strip()
+    cuisty = str(flask.request.form['featureInfo']).strip().split()
+    cui = cuisty[0]
+    sty = cuisty[1]
+    name = cuisty[2]
+    filter_builder = flask.request.form['filter_builder']
+    db = mysql.connect()
+    cur = db.cursor()
 
-    lower = flask.request.form.get('lower',None)
-    upper = flask.request.form.get('upper',None)
-    width_option = flask.request.form.get('width_option',False)
-    fixed_width = flask.request.form.get('fixed_width',None)
-    condition_option = flask.request.form.get('conditions',None)
-    plot_type = flask.request.form.get('plot_type',None)
-    start_month_option = flask.request.form.get('start_month',None)
-    start_year_option = flask.request.form.get('start_year',None)
-    start_month_before_option = flask.request.form.get('start_month_before',None)
-    start_year_before_option = flask.request.form.get('start_year_before',None)
-    minimum_age_option = flask.request.form.get('minimum_age',None)
-    maximum_age_option = flask.request.form.get('maximum_age',None)
-    gender = flask.request.form.get('gender',None)
-    aggregate_analysis_type = flask.request.form.get('aggregate_analysis_type',None)
-
-
-    phase_option = flask.request.form.getlist('phase', None)
-    status_option = flask.request.form.getlist('status', None)
-    study_type_option = flask.request.form.getlist('study_types', None)
-    intervention_type_option = flask.request.form.getlist('intervention_types', None)
-    agency_type_option = flask.request.form.getlist('agency_types', None)
-    intervention_model_option = flask.request.form.getlist('intervention_model', None)
-    allocation_option = flask.request.form.getlist('allocation', None)
-    time_perspective_option = flask.request.form.getlist('time_perspective', None)
-
-    conditions = condition_option
+    curr_condition = "V.task = '%s' and V.cui='%s' and V.sty = '%s'"  %(disease, cui, sty)
+    curr_tid = "SELECT distinct V.tid from cancer_cui where %s" %(curr_condition)
 
     # the list of trial IDs if the condition is not indexed in COMPACT
     trial_ids_with_conditions = []
 
-    # retrieve the list of trial IDs associated with a disease, if not in the disease list, query CT.gov to retrieve trial IDs
-
-    #cur = mysql.connect().cursor()
-
     db = mysql.connect()
     cur = db.cursor()
 
-    disease_query = ""
-    if (len(condition_option) != 0):
-        list_of_diseases = []
-        all_diseases_query = "select distinct task from cancer_cui"
-        cur.execute(all_diseases_query)
-        for row in cur.fetchall():
-            list_of_diseases.append(row[0])
+    #sql = "SELECT distinct V.TID, V.month FROM cancer_cui V, meta T where %s" %(curr_condition) + " and T.tid = V.tid and "+ phase_query + " and "+ status_query + " and "+ study_type_query + " and "+ intervention_type_query + " and "+ agency_type_query + " and "+ gender_query + " and "+ start_date_query + " and "+ age_query + " and "+ intervention_model_query + " and "+ allocation_query + " and "+ time_perspective_query + " and "+ disease_query
+    sql = "SELECT V.month, count(*), count(distinct V.tid) FROM cancer_cui V, meta T where %s and %s group by month order by month"  % (curr_condition, filter_builder)
+    print sql
 
-        if condition_option in list_of_diseases:
-            # generate the part of query containing the condition field
-            #disease_query = " T.tid in (select tid from all_diseases_trials where disease='%s')" %condition_option
-            disease_query = " (V.task='%s')" %condition_option
-        else:
-            # trial_ids_with_conditions only deals with disease name not in the disease_list table or multiple diseases in the condition field
-            disease_query = " (T.conditions LIKE '%%')"
-            trial_ids_with_conditions = get_disease_clinical_trials(condition_option)
-    else:
-        disease_query = " (T.conditions LIKE '%%')"
+    cur.execute(sql)
+
+    modal_boundary_output_simple = []
+    modal_boundary_output_simple.append(["value", "Frequency"])
+    num_of_trials = 0
+    for row in cur.fetchall():
+        modal_boundary_output_simple.append([str(row[0]),int(row[1])])
+        num_of_trials += int(row[2])
 
 
+    if (len(modal_boundary_output_simple) > 0):
+        return flask.render_template('duration.html', **locals())
 
-
-    # check phase option and generate part of the query
-    phase_query = ""
-    if (len(phase_option) == 0):
-        phase_query += " (T.phase LIKE '%%')"
-    else:
-        phase_query += " ("
-        for phase in phase_option:
-            phase_query += " T.phase LIKE '%s'" % (phase) +" OR"
-            phases += phase + "/ "
-        # this is not meaningful, just to terminate the part of the query
-        phase_query += " T.phase LIKE '%terminated%')"
-
-    # check status option and generate part of the query
-    if (len(status_option) == 0):
-        status_query += " (T.overall_status LIKE '%%')"
-    else:
-        status_query += " ("
-        for status in status_option:
-            if (status == "Open Studies"):
-                status_query += " T.overall_status = 'Recruiting' OR T.overall_status = 'Not yet recruiting' OR"
-            elif (status == "Closed Studies"):
-                status_query += " T.overall_status = 'Active, not recruiting' OR T.overall_status = 'Active, not recruiting' OR T.overall_status = 'Completed' OR T.overall_status = 'Withdrawn' OR T.overall_status = 'Suspended' OR T.overall_status = 'Terminated' OR T.overall_status = 'Enrolling by invitation' OR"
-            else:
-                status_query += " T.overall_status = '%s'" % (status) + " OR"
-            statuses += status + "/ "
-        # this is not meaningful, just to terminate the part of the query
-        status_query += " T.overall_status LIKE '%reterminated%')"
-
-    # check study type option and generate part of the query
-    if (len(study_type_option) == 0):
-        study_type_query = " (T.study_type LIKE '%%')"
-    else:
-        study_type_query += " ("
-        for study_type in study_type_option:
-            study_type_query += " T.study_type = '%s'" %(study_type) +" OR"
-            study_types += study_type + "/ "
-        study_type_query += " T.study_type LIKE '%terminated%')"
-
-    # check intervention type option and generate part of the query
-    if (len(intervention_type_option) == 0):
-        intervention_type_query = " (T.intervention_type LIKE '%%')"
-    else:
-        intervention_type_query += " ("
-        for intervention_type in intervention_type_option:
-            intervention_type_query += " T.intervention_type = '%s'" %(intervention_type) + " OR"
-            intervention_types += intervention_type + "/ "
-        intervention_type_query += " T.intervention_type LIKE '%terminated%')"
-
-    # check agency type option and generate part of the query
-    if (len(agency_type_option) == 0):
-        agency_type_query = " (T.agency_type LIKE '%%')"
-    else:
-        agency_type_query += " ("
-        for agency_type in agency_type_option:
-            agency_type_query += " T.agency_type LIKE '%%%s%%'" %(agency_type) + " OR"
-            agency_types += agency_type + "/ "
-        agency_type_query += " T.agency_type LIKE '%terminated%')"
-
-    # check agency type option and generate part of the query
-    if (gender == '' or gender == 'all'):
-        gender_query = " (T.gender LIKE '%%')"
-    else:
-        gender_query = " (T.gender = '%s'" %(gender) + ")"
-
-    # check start_year_option start_month_option and generate start_date_query
-    if (start_year_option == '' or start_month_option == '' or start_month_option == 'N/A'):
-        start_date_query = " (T.start_date LIKE '%%')"
-    else:
-        start_date = str(start_month_option) + " " + str(start_year_option)
-        start_date_query = " (STR_TO_DATE(T.start_date,'%%M %%Y') >= STR_TO_DATE('%s'" %(start_date) +",'%M %Y'))"
-
-    if (start_year_before_option != '' and start_month_option != ''):
-        start_date_before = str(start_month_before_option) + " " + str(start_year_before_option)
-        start_date_query += " and (STR_TO_DATE(T.start_date,'%%M %%Y') <= STR_TO_DATE('%s'" %(start_date_before) +",'%M %Y'))"
-
-    # check minimum_age, maximum_age and generate age_query
-
-    minimum_age = 0
-    maximum_age = 150
-
-    if (minimum_age_option != ''):
-        try:
-            minimum_age = float(minimum_age_option)
-        except TypeError:
-            minimum_age = 0
-
-    if (maximum_age_option != ''):
-        try:
-            maximum_age = float(maximum_age_option)
-        except TypeError:
-            maximum_age = 150
-
-    #age_query = " (T.minimum_age_in_year >= %.9f" %float(minimum_age) +" and T.maximum_age_in_year <= %.9f)" %float(maximum_age)
-    age_query = ("1=1")
-
-
-    # check intervention model option and generate part of the query
-    if (len(intervention_model_option) == 0):
-        intervention_model_query = " (T.intervention_model LIKE '%%')"
-    else:
-        intervention_model_query += " ("
-        for intervention_model in intervention_model_option:
-            intervention_model_query += " T.intervention_model LIKE '%%%s%%'" %(intervention_model) + " OR"
-            intervention_models += intervention_model + "/ "
-        intervention_model_query += " T.intervention_model LIKE '%terminated%')"
-
-    # check allocation option and generate part of the query
-    if (len(allocation_option) == 0):
-        allocation_query = " (T.allocation LIKE '%%')"
-    else:
-        allocation_query += " ("
-        for allocation in allocation_option:
-            allocation_query += " T.allocation LIKE '%%%s%%'" %(allocation) + " OR"
-            allocations += allocation + "/ "
-        allocation_query += " T.allocation LIKE '%terminated%')"
-
-    # check time perspective option and generate part of the query
-    if (len(time_perspective_option) == 0):
-        #time_perspective_query = " (T.time_perspective LIKE '%%')"
-        time_perspective_query = " (1=1)"
-    else:
-        time_perspective_query += " ("
-        for time_perspective in time_perspective_option:
-            time_perspective_query += " T.time_perspective LIKE '%%%s%%'" %(time_perspective) + " OR"
-            time_perspectives += time_perspective + "/ "
-        time_perspective_query += " T.time_perspective LIKE '%terminated%')"
-
-    value_range_error = False
-    if (lower != None and upper != None):
-        try:
-            if (float(lower) > float(upper)):
-                value_range_verification_output += "Lower bound value cannot be greater than upper bound value."
-                value_range_error = True
-        except ValueError, e:
-            print ("Value error")
-
-    # get the total enrollment of trials contaning the variable in the certain range
-    enrollment_value = 0
-
-
-    # start the aggregate analysis
-
-    # get the total number of trials meeting the requirements
-    trials_meeting_requirement = ()
-
-    if (lower != None and upper != None and value_range_error == False):
-
-        # generate distribution of values in the certain range
-        if width_option:
-            width = 0
-        else:
-            if fixed_width is None:
-                width = 0.5
-            else:
-                try:
-                    width = float(fixed_width)
-                except ValueError:
-                    width = 0.5
-
-        # get all expressions meeting user's query
-        trials_exps = {}
-
-        #cur = mysql.connect().cursor()
-
-
-        #sql = "SELECT distinct V.TID, V.month FROM cancer_cui V, meta T where %s" %(curr_condition) + " and T.tid = V.tid and "+ phase_query + " and "+ status_query + " and "+ study_type_query + " and "+ intervention_type_query + " and "+ agency_type_query + " and "+ gender_query + " and "+ start_date_query + " and "+ age_query + " and "+ intervention_model_query + " and "+ allocation_query + " and "+ time_perspective_query + " and "+ disease_query
-        sql = "SELECT V.month, count(*), count(distinct V.tid) FROM cancer_cui V, meta T where %s" %(curr_condition) + " and T.tid = V.tid and "+ phase_query + " and "+ status_query + " and "+ study_type_query + " and "+ intervention_type_query + " and "+ agency_type_query + " and "+ gender_query + " and "+ start_date_query + " and "+ age_query + " and "+ intervention_model_query + " and "+ allocation_query + " and "+ time_perspective_query + " and "+ disease_query + "and V.month>=%s and V.month <= %s" % (str(lower),str(upper)) + " group by month order by month"
-        print sql
-
-        cur.execute(sql)
-
-        modal_boundary_output_simple = []
-        modal_boundary_output_simple.append(["value", "Frequency"])
-        num_of_trials = 0
-        for row in cur.fetchall():
-            modal_boundary_output_simple.append([str(row[0]),int(row[1])])
-            num_of_trials += int(row[2])
-
-
-        for row in cur.fetchall():
-            id = row[0]
-            #exps = ast.literal_eval(row[1])
-            exps = row[1]
-            if id in trials_exps:
-                trials_exps[id] += exps  ####### some thing wrong
-            else:
-                trials_exps[id] = exps
-            # get total number of trials meeting all the specifications
-            if (len(trial_ids_with_conditions) > 0):
-                if id in trial_ids_with_conditions:
-                    trials_meeting_requirement += (id, )
-            else:
-                trials_meeting_requirement += (id, )
-
-        trials_meeting_requirement = remove_duplicates(trials_meeting_requirement)
-
-        #num_of_trials_output += "There are <span style=color:red>%s</span> studies "  % len(trials_meeting_requirement) + "meeting the requirements in the query <br><br>"
-        num_of_trials_output += "There are <span style=color:red>%s</span> studies "  % (num_of_trials) + "meeting the requirements in the query <br><br>"
-
-        # change the minimum_age and maximum_age to be null if they are not set:
-        if (minimum_age == 0):
-            minimum_age = ""
-        if (maximum_age == 150):
-            maximum_age = ""
-
-        if (aggregate_analysis_type == 'Distribution of boundary values'):
-
-            if (len(modal_boundary_output_simple) > 0):
-                return flask.render_template('other_distributions.html', **locals())
-
-    return "Builder page disease %s" %disease +"; and the variable is %s" %var
+    return "Builder page disease %s" %disease +"; and the variable is %s" %name
 
 
 @application.route('/download', methods=['POST','GET'])

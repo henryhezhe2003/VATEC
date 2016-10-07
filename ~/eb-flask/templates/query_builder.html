@@ -549,128 +549,25 @@
   
 </script>
 
-<table>
-	<tr>
-		<td>
-			<FORM action="{{ url_for('vatec_main') }}" method="post" onsubmit='showLoading();'>
-				<button type="submit" name="button2" style="height: 40px; width: 200px;" onclick="if (check_input()){show_loading();}else return false;"><font size = 2>Choose another condition</font></button>
-			</FORM>
-		</td>
-		<td>
-
-		</td>
-	</td>
-</table>
-
-<BR>
-
-<FORM action="" method="post">
-	<input type="text" id="hidden_options" name="hidden_options" style="display:none;">
-		<input type="text" value = '{{var}}' id="variable" name="variable" style="display:none;">
-		<input type="text" value = '{{disease}}' id="disease" name="disease" style="display:none;">
-		<input type="text" value = '{{topk}}' id="topk" name="topk" style="display:none;">
-</FORM>
-
 Current condition is {{disease}}
 
 <div id="result">
-	{% if initial_value_spectrum %}
-	
 	<div id='loadingmsg' style='display: none;'>Analyzing, please wait...</div>
 	<div id='loadingover' style='display: none;'></div>
-	
-	
-		<FORM action="{{ url_for('analysis') }}" method="post" onsubmit='showLoading();'>
-			<table border = "1" align = 'top'>
-				<tr>
-					<td align = 'top'>
-						<div id="result">
-				{% if aggregator_output %}
-				<script type="text/javascript">
-					//document.getElementById("loading").style.display = "none";
-					</script>
-				{{ aggregator_output|safe }}
-				{% endif %}
-			</div>
-			
-			Please specify a value range(<font color="red"><strong><i>required</i></strong></font>): <br><br>
-			Lower Bound: <input type="text" id="lower" name="lower" style="width:60px" value={% if lower_value %}{{lower_value}}{% endif %}>
-				<!--{% if minimum_value %}
-					<span style=color:grey>Normal minimum value: {{minimum_value}}</span><br>
-				{% endif %}-->
-			Upper Bound: <input type="text" id="upper" name="upper" style="width:60px" value={% if upper_value %}{{upper_value}}{% endif %}>
-				<!--{% if maximum_value %}
-					<span style=color:grey>Normal maximum value: {{maximum_value}}</span><br>
-				{% endif %}-->
-				         <input type="hidden" name="variable" value="{{ curr_condition }}">
-				         <input type="hidden" name="featureName" value="{{ name }}">
-						 <input type="hidden" name="disease" value="{{ disease }}">
-							 
-						 <input type="hidden" name="on_option_page" value="on_option_page">
-					</td>
-					<td align = 'top'>
-						
-						<!--<div id="loading">Processing ...</div>-->
-						
-						<div id="result">
-							{% if initial_value_spectrum %}
-							
-							<script type="text/javascript">
-								//document.getElementById("loading").style.display = "none";
-							</script>
-							<BR>
-							
-							<!-- Google chart API -->
-                            <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-                            <script type="text/javascript">
-                                google.charts.load('current', {packages: ['corechart']});
-								google.charts.setOnLoadCallback(drawChart);
-								function drawChart() {
-								    //window.alert(document.getElementById("variable").value)
-									var data = new google.visualization.arrayToDataTable({{ initial_value_spectrum|safe }});
-									//var featureInfo = document.getElementById("featureInfo").value.split(' ');
-									var featureName = '{{name}}'
-									//var featureName = featureInfo[2]
-									//window.alert(featureName)
-									var options = {
-										title: 'Duration distribution of disease (' + document.getElementById("disease").value+ ') and feature (' + featureName + ')',
-										curveType: 'function',
-										hAxis: {
-											title: 'Values of ' + featureName + '(Month)',
-											titleTextStyle: {
-												color: '#333',
-												fontSize: 15
-											},
-											//gridlines: {
-											//	color: '#797979',
-											//	count: 10
-											//},
-											//format: '####.#'
-										},
-										vAxis: {
-										    title: 'Frequency',
-											//minValue: 0,
-											gridlines: {
-												color: '#797979',
-												count: 5
-											}
-										},
-										explorer: {}
-									};
-									var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
-									chart.draw(data, options);
-								}
-							</script>
-							<div id="chart_div" style="top: 0px; width: 400px; height: 250px;"></div>
 
-							<BR>
-							{% endif %}
-						</div>
-					</td>
-				</tr>
-			</table>
-			
-			<br>
+		<FORM action="{{ url_for('show_frequent_features') }}" method="post" onsubmit='showLoading();'>
+			<button type="submit" name="button2" style="height: 30px; width: 150px;" onclick="if (check_range()){show_loading();}else return false;"><font size = 2> Show feature list </font></button>
+			<input type="text" id="hidden_options" name="hidden_options" style="display:none;">
+			<input type="text" id="disease" name="disease" value="{{disease}}" style="display:none;">
+
+		Top <SELECT id="topk" name="topk">
+			<option value = 10 selected="selected"> 10 </option>
+			<option value = 20> 20 </option>
+			<option value = 30> 30 </option>
+			<option value = 40> 40 </option>
+			<option value = 50> 50 </option>
+			<option value = 'all'> All </option>
+			</SELECT> Features
 
 
 			<table border = 1>
@@ -886,12 +783,8 @@ Current condition is {{disease}}
 
 			<br><br>
 				
-			<button type="submit" name="button2" style="height: 30px; width: 150px;" onclick="if (check_range()){show_loading();}else return false;"><font size = 2> Process </font></button>
-				
-			<input type="text" id="hidden_options" name="hidden_options" style="display:none;">
 		</FORM>
 
-	{% endif %}
 </div>
 
 
