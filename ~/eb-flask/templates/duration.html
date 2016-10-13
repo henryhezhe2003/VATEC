@@ -444,7 +444,9 @@ function showLoading() {
 			</FORM>
 		</td>
 		<td>
-			<FORM action="{{ url_for('download') }}">
+			<FORM action="{{ url_for('download') }}" method="post">
+				<input type="hidden" id="curr_condition" name="curr_condition" value="{{curr_condition}}" >
+				<input type="hidden" id="filter_builder" name="filter_builder" value="{{filter_builder}}">
 				<button type="submit" id="button_csv" name="button_csv" style="height: 40px; width: 200px;" value=" Download output in csv "><font size = 2> Export output in CSV </font> </button>
 			</FORM>
 		</td>
@@ -486,12 +488,11 @@ function showLoading() {
 			function drawChart() {
 				
 				var data = new google.visualization.arrayToDataTable({{ modal_boundary_output_simple|safe }});
-
 				var options = {
-					title: 'Distribution of number of studies over boundary values for '  + '{{featureName}}',
+					title: 'Distribution of number of UMLS terms over month for '  + '{{featureName}}',
 					curveType: 'function',
 					hAxis: {
-						title: 'Boundary Values of ' + '{{featureName}}',
+						title: 'Month for ' + '{{featureName}}',
 						titleTextStyle: {
 							color: '#333',
 							fontSize: 15
@@ -503,7 +504,7 @@ function showLoading() {
 						format: '####.#'
 					},
 					vAxis: {
-						title: 'Number of studies',
+						title: 'Frequency',
 						minValue: 0,
 						gridlines: {
 							color: '#797979',
@@ -512,29 +513,16 @@ function showLoading() {
 					},
 					explorer: {}
 				};
-				
-				
 				var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
 				chart.draw(data, options);
-				
-				{#
-				var columns = [];
-				var series = {};
-				for (var i = 0; i < data.getNumberOfColumns(); i++) {
-					columns.push(i);
-					if (i > 0) {
-						series[i - 1] = {};
-					}
-				};
-				
+
+				// distribution of pattern
+				var data = new google.visualization.arrayToDataTable({{ pattern_freq_output_simple|safe }});
 				var options = {
-					width: 1100,
-					height: 500,
-					series: series,
-					title: 'Distribution of number of studies over boundary values for '  + '{{featureName}}',
+					title: 'Distribution of number of UMLS term over pattern for '  + '{{featureName}}',
 					curveType: 'function',
 					hAxis: {
-						title: 'Boundary Values of ' + '{{featureName}}',
+						title: 'Pattern for ' + '{{featureName}}',
 						titleTextStyle: {
 							color: '#333',
 							fontSize: 15
@@ -546,7 +534,7 @@ function showLoading() {
 						format: '####.#'
 					},
 					vAxis: {
-						title: 'Number of studies',
+						title: 'Frequency',
 						minValue: 0,
 						gridlines: {
 							color: '#797979',
@@ -555,193 +543,18 @@ function showLoading() {
 					},
 					explorer: {}
 				};
-				
-				
-				google.visualization.events.addListener(chart, 'select', function () {
-														var sel = chart.getSelection();
-														// if selection length is 0, we deselected an element
-														if (sel.length > 0) {
-															// if row is undefined, we clicked on the legend
-															if (sel[0].row === null) {
-																var col = sel[0].column;
-																if (columns[col] == col) {
-																	// hide the data series
-																	columns[col] = {
-																		label: data.getColumnLabel(col),
-																		type: data.getColumnType(col),
-																		calc: function () {
-																			return null;
-																		}
-																};
-																// grey out the legend entry
-																series[col - 1].color = '#CCCCCC';
-																}
-																else {
-																// show the data series
-																	columns[col] = col;
-																	series[col - 1].color = null;
-																}
-																var view = new google.visualization.DataView(data);
-																view.setColumns(columns);
-																chart.draw(view, options);
-															}
-														}
-														});
-														
-				var data2 = new google.visualization.arrayToDataTable({{ value_range_distribution_output|safe }});
-				
-				//var data = new google.visualization.DataTable(%({{ distribution_value|safe }})s,0.5);
-				
-				var options2 = {
-					title: 'Distribution of number of studies over permissible value ranges for '  + '{{featureName}}',
-					curveType: 'function',
-					hAxis: {
-						title: 'Value Intervals of ' + '{{featureName}}',
-						titleTextStyle: {
-							color: '#333',
-							fontSize: 15
-						},
-						gridlines: {
-							color: '#797979',
-							count: 4
-						},
-						format: '####'
-					},
-					vAxis: {
-						title: 'Number of studies',
-						minValue: 0,
-						gridlines: {
-							color: '#797979',
-							count: 5
-						}
-					},
-					explorer: {}
-				};
-				
-				
-				var chart2 = new google.visualization.ColumnChart(document.getElementById('chart_div2'));
-				chart2.draw(data2, options2);
-				
-				
-				var data3 = new google.visualization.arrayToDataTable({{ value_range_width_distribution_output|safe }});
-				
-				//var data = new google.visualization.DataTable(%({{ distribution_value|safe }})s,0.5);
-			
-				var options3 = {
-					title: 'Distribution of number of studies over permissible value range widths for '  + '{{featureName}}',
-					curveType: 'function',
-					hAxis: {
-						title: 'Value Interval Widths of ' + '{{featureName}}',
-						titleTextStyle: {
-							color: '#333',
-							fontSize: 15
-						},
-						gridlines: {
-							color: '#797979',
-							count: 4
-						},
-						format: '####.#'
-					},
-					vAxis: {
-						title: 'Number of studies',
-						minValue: 0,
-						gridlines: {
-							color: '#797979',
-							count: 5
-						}
-					},
-					explorer: {}
-				};
-				
-				
-				var chart3 = new google.visualization.ColumnChart(document.getElementById('chart_div3'));
-				chart3.draw(data3, options3);
-			 #}
+
+
+				var chart = new google.visualization.ColumnChart(document.getElementById('chart_pattern'));
+				chart.draw(data, options);
+
+
 			}
 		</script>
 		<div id="chart_div" style="top: 0px; width: 1100px; height: 500px;"></div>
-		<div id="chart_div2" style="top: 0px; width: 1100px; height: 500px;"></div>
-		<div id="chart_div3" style="top: 0px; width: 1100px; height: 500px;"></div>
-		<BR>
-		
-		<!-- visualization of results by D3 -->
-		<!--
-		<script type="text/javascript">
-		
-			de = {{ distribution_value|safe }};
-			
-			var mySVG = d3.select("body")
-			.append("svg")
-			.attr("width", 1280)
-			.attr("height", 1000)
-			.style('position','absolute')
-			.style('top',840)
-			.style('left',10)
-			.attr('class','fig');
-			
-			var heightScale = d3.scale.linear()
-			.domain([0, d3.max(de,function(d) { return d.cols;})])
-			.range([0, 400]);
-			
-			mySVG.selectAll(".xLabel")
-			.data(de)
-			.enter().append("svg:text")
-			.attr("x", function(d,i) {return 113 + (i * 22);})
-			.attr("y", 435)
-			.attr("text-anchor", "middle")
-			.text(function(d,i) {return d.name;})
-			.attr('transform',function(d,i) {return 'rotate(-90,' + (113 + (i * 22)) + ',435)';});
-			
-			mySVG.selectAll(".yLabel")
-			.data(heightScale.ticks(10))
-			.enter().append("svg:text")
-			.attr('x',80)
-			.attr('y',function(d) {return 400 - heightScale(d);})
-			.attr("text-anchor", "end")
-			.text(function(d) {return d;});
-			
-			mySVG.selectAll(".yTicks")
-			.data(heightScale.ticks(10))
-			.enter().append("svg:line")
-			.attr('x1','90')
-			.attr('y1',function(d) {return 400 - heightScale(d);})
-			.attr('x2',1200)
-			.attr('y2',function(d) {return 400 - heightScale(d);})
-			.style('stroke','lightgray');
-			
-			var colorScale = d3.scale.category20c();
-			
-			var myBars = mySVG.selectAll('rect')
-			.data(de)
-			.enter()
-			.append('svg:rect')
-			.attr('width',15)
-			.attr('height',function(d,i) {return heightScale(d.cols);})
-			.attr('x',function(d,i) {return (i * 22) + 100;})
-			.attr('y',function(d,i) {return 400 - heightScale(d.cols);})
-			.style('fill',function(d, i) { return colorScale(i);});
-			
-			mySVG.selectAll(".bartext")
-			.data(de)
-			.enter()
-			.append("text")
-			.attr("class", "bartext")
-			.attr("text-anchor", "middle")
-			.attr("fill", "grey")
-			.attr("x", function(d,i) {return (i * 22) + 100;})
-			.attr("y", function(d,i) {return 400 - heightScale(d.cols);})
-			.style("text-anchor", "middle")
-			.text(function(d) {return d.cols;})
-			.attr('transform',function(d,i) {return 'rotate(-90,' + ((i * 22 + 100)+17) + ',' + (400-heightScale(d.cols)+5) + ')';});
-			
-			</script>
-		-->
-		<BR>
+		<div id="chart_pattern" style="top: 0px; width: 1100px; height: 500px;"></div>
 		<BR>
 
-
-
-	
 </div>
 {% endif %}
 

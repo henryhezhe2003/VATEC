@@ -579,27 +579,23 @@ function change_option(){
 	});
 </script>
 
-	<div id='loadingmsg' style='display: none;'>Analyzing, please wait (normally within 30 seconds)... </div>
+	<div id='loadingmsg' style='display: none;'>Analyzing, please wait (normally within 10 seconds)... </div>
 	<div id='loadingover' style='display: none;'></div>
 
-<table style="border:1px dotted black;">
-	<tr><td style="border:1px solid blue;">
-	<FORM action="{{ url_for('build_query') }}" method="post" onsubmit='showLoading();'>
-
-		Select a condition:
-		<SELECT id="disease" name="disease">
-			<optgroup label="Please choose a disease to start">
-			<!-- <option value = ''>Please choose a condition</option> -->
-			{% for dis in diseases_list %}
-				<option value = '{{dis}}' {% if cur_var == '{{dis}}': %}selected{% endif %}> {{dis}} </option>
-			{% endfor %}
-				</optgroup>
-		</SELECT>
+	<FORM action="{{ url_for('raw_data') }}" method="post" onsubmit='showLoading();'>
+        {#
+        Condition: <SELECT id="disease" name="disease">
+					<optgroup label="Please choose a disease to start">
+					{% for dis in diseases_list %}
+						<option value = '{{dis}}'> {{dis}} </option>
+					{% endfor %}
+					</optgroup>
+				</SELECT>
 		<br>
 
 		OR <BR>
 
-		<input type="button" name="answer" value="Type a condition" onclick="showDiv()" style="height: 30px; width: 300px; font-size:10px" />
+		<input type="button" name="answer" value="Type a condition" onclick="showDiv()" style="height: 120px; width: 300px; font-size:20px" />
 		<br>
 		<br>
 		<div id="diseaseDiv"  style="display:none;" class="answer_list" >
@@ -607,19 +603,30 @@ function change_option(){
 			<div class="ui-widget">
 				<label for="tags">Type a condition: </label>
 				<input id="tags" name="typed_disease">
-					</div>
+			</div>
 			<span style=color:grey>Note: it is mandatory that you click on one suggested condition in the list.</span>
-			<br><br>
-
+			<br>
 		</div>
+        #}
+	    <INPUT type="submit" name="button2" width='200px' value=" Process " onclick="if (check_condition()){show_loading();}else return false;">&nbsp;&nbsp;&nbsp;
+	    <input type="text" id="input_tid" name="input_tid" placeholder = "Input a clinical trials" >
+    </FORM>
 
-		<INPUT type="submit" name="button2" style="height: 50px; width: 300px; font-size:20px" value=" Go to condition detail " onclick="if (check_condition()){show_loading();}else return false;">&nbsp;&nbsp;&nbsp;
-		<input type="text" id="hidden_options" name="hidden_options" style="display:none;">
-	</FORM>
-	</td><td style="border:1px solid blue;">
-	<FORM action="{{ url_for('raw_data') }}">
-		<input type="hidden", name="input_tid", value="" >
-		<button type="submit" id="raw_data" name="raw_data" style="height: 80px; width: 300px; font-size:20px"  value="Go to raw data"> Go to raw data </button>
-	</FORM>
-	</td></tr></table>
-{%endblock%}
+    {% if raw_data_list %}
+	<b>Clinical study ID</b>: ({{input_tid}}) <br>
+	<b>Number of UMLS terms</b>: {{num_umls_term}}<br>
+	<b>Brief title:</b>: {{tidInfo["brief_title"]}}<br>
+	<b>Overall status</b>: {{tidInfo["overall_status"]}}<br>
+	<b>Study type</b>: {{tidInfo["study_type"]}}<br>
+	<b>Phase</b>: {{tidInfo["phase"]}}<br>
+	<b>Intervention Type</b>: {{tidInfo["intervention_type"]}}<br>
+	<b>Intervention Name</b>: {{tidInfo["intervention_name"]}}<br>
+	<b>Link to ClinicalTrials.gov</b>: <a href="https://clinicaltrials.gov/ct2/show/{{input_tid}}">{{input_tid}}</a><br>
+
+
+	<table border = 1 class="CSSTableGenerator">
+		{{title_output|safe}}
+        {{data_output|safe}}
+	</table>
+    {% endif %}
+	{%endblock%}

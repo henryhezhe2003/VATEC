@@ -587,9 +587,9 @@ function change_option(){
 		<b>Number of UMLS terms</b>: {{num_trials_with_disease}} <br><br>
 
 		<table border = 1 class="CSSTableGenerator">
-			<tr><td><b>UMLS term (TUI)</b></td><td><b>CUI</b></td><td><b>Frequency</b></td></tr>
-			{% for name, sty, cui, freq in distribution_numeric_features %}
-			<tr><td>{{name}}({{sty}})</td><td>{{cui}}</td><td>{{freq}}</td></tr>
+			<tr><td><b>UMLS term</b></td><td><b>CUI</b></td><td><b>Semantic group</b></td><td><b>Semantic type</b></td><td><b>Frequency</b></td></tr>
+			{% for name, sty, cui, freq,sty_desc,group in distribution_numeric_features %}
+			<tr><td>{{name}}</td><td>{{cui}}</td><td>{{group}}</td><td>{{sty}} ({{sty_desc}})</td><td>{{freq}}</td></tr>
 			{% endfor %}
 		</table>
 
@@ -598,11 +598,11 @@ function change_option(){
 			<FORM action="{{ url_for('analysis') }}" method="post" onsubmit='showLoading();'>
 				<input type="hidden" name="disease" value="{{ disease }}">
 				<input type="hidden" name="filter_builder" value="{{ filter_builder }}">
-				<b>Quantitative Eligibility Features</b>:
+				<b>Quantitative Eligibility Features (with duration)</b>:
 				<SELECT id="featureInfo" name="featureInfo">
 					<optgroup label="Please choose a variable to start">
-						{% for name, sty,cui, freq in distribution_numeric_features %}
-							<option value = "{{cui}} {{sty}} {{name}}"> {{name}}({{sty}}) {{freq}}</option>
+						{% for name, sty,cui, freq in duration_features %}
+							<option value = "{{cui}} {{sty}} {{name}}"> {{name}}({{sty}})</option>
 						{% endfor %}
 					</optgroup>
 				</SELECT>

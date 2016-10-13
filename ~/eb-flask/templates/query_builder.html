@@ -555,235 +555,197 @@ Current condition is {{disease}}
 	<div id='loadingmsg' style='display: none;'>Analyzing, please wait...</div>
 	<div id='loadingover' style='display: none;'></div>
 
-		<FORM action="{{ url_for('show_frequent_features') }}" method="post" onsubmit='showLoading();'>
-			<button type="submit" name="button2" style="height: 30px; width: 150px;" onclick="if (check_range()){show_loading();}else return false;"><font size = 2> Show feature list </font></button>
-			<input type="text" id="hidden_options" name="hidden_options" style="display:none;">
-			<input type="text" id="disease" name="disease" value="{{disease}}" style="display:none;">
+	<FORM action="{{ url_for('show_frequent_features') }}" method="post" onsubmit='showLoading();'>
+		<button type="submit" name="button2" style="height: 30px; width: 150px;" onclick="if (check_range()){show_loading();}else return false;"><font size = 2> Show feature list </font></button>
+		<input type="text" id="hidden_options" name="hidden_options" style="display:none;">
+		<input type="text" id="disease" name="disease" value="{{disease}}" style="display:none;">
 
-		Top <SELECT id="topk" name="topk">
-			<option value = 10 selected="selected"> 10 </option>
-			<option value = 20> 20 </option>
-			<option value = 30> 30 </option>
-			<option value = 40> 40 </option>
-			<option value = 50> 50 </option>
-			<option value = 'all'> All </option>
-			</SELECT> Features
+	Top <SELECT id="topk" name="topk">
+		<option value = 10 selected="selected"> 10 </option>
+		<option value = 20> 20 </option>
+		<option value = 30> 30 </option>
+		<option value = 40> 40 </option>
+		<option value = 50> 50 </option>
+		<option value = 'all'> All </option>
+		</SELECT> Features
 
-
-			<table border = 1>
-				<caption><i><b>Figure options<b></i><caption>
-					<tr>
-						<td>Varying width:<INPUT type="checkbox" name="width_option" value="width_option" {% if width_option %}checked="yes"{% endif %}></td>
-						<td>Plot Type:
-							<SELECT id="plot_type" name="plot_type">
-								<optgroup label="Please choose a plot type">
-								<option disabled = 'disabled' value = 'spectrum_for_ranges' {% if plot_type == 'spectrum_for_ranges': %}selected{% endif %}> Value Ranges </option>
-								<option value = 'spectrum_for_value_points' {% if plot_type == 'spectrum_for_value_points': %}selected{% endif %}> Value Points </option>
-							</SELECT>
-						</td>
-						<td>Fixed value range width (default: 0.5):
-							<input type="text" id="fixed_width" name="fixed_width" style="width:60px" {% if fixed_width: %} value = "{{fixed_width}}" {% endif %} > <span style=color:grey>(e.g. 0.1, 0.5, 1.0)</span>
-						</td>
-					</tr>
-			</table>
-			
-			<br><br>
-						
-			<table border = 1>
-				<caption><i><b>Basic options ('All Studies' by default)<b></i><caption>
-				
-				<tr>
-					<td>
-						<span style=color:grey>Conditions:</span>
-						<input type="text" id="conditions" name="conditions" style="width:200px" {% if disease: %} value = "{{disease}}" {% endif %} style="display:none;">
-							<span style=color:grey>(e.g. 'heart disease', 'diabetes'. Multiple conditions separated by ',')</span>
-					</td>
-				</tr>
-				
-				<tr>
-					<td>
-						<span style=color:grey>Gender:</span>
-						<SELECT id="gender" name="gender">
-				 			<optgroup label="Please choose a gender">
-					 		<option value = 'all' selected="selected"></option>
-					 		<option value = 'both'> both </option>
-					 		<option value = 'male'> male </option>
-					 		<option value = 'female'> female </option>
-					 	</SELECT>  (Both: {{distribution_gender["both"]}}%, Male: {{distribution_gender["male"]}}%, Female: {{distribution_gender["female"]}}%)
-			 			&nbsp;&nbsp;|&nbsp;&nbsp;
-						<span style=color:grey>Age:</span>
-						Minimum age: <input type="text" id="minimum_age" name="minimum_age" style="width:30px" {% if minimum_age: %} value = "{{minimum_age}}" {% endif %} >
-							Maximum age: <input type="text" id="maximum_age" name="maximum_age" style="width:30px" {% if maximum_age: %} value = "{{maximum_age}}" {% endif %} >
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<span style=color:grey>Start date after:</span> Month:
-			 			<SELECT id="start_month" name="start_month">
-						  <option value = '' {% if month == 'N/A': %}selected{% endif %}></option>
-						  <option value = 'January' {% if month == 'January': %}selected{% endif %}> January </option>
-						  <option value = 'February' {% if month == 'February': %}selected{% endif %}> February </option>
-						  <option value = 'March' {% if month == 'March': %}selected{% endif %}> March </option>
-						  <option value = 'April' {% if month == 'April': %}selected{% endif %}> April </option>
-						  <option value = 'May' {% if month == 'May': %}selected{% endif %}> May </option>
-						  <option value = 'June' {% if month == 'June': %}selected{% endif %}> June </option>
-						  <option value = 'July' {% if month == 'July': %}selected{% endif %}> July </option>
-						  <option value = 'August' {% if month == 'August': %}selected{% endif %}> August </option>
-						  <option value = 'September' {% if month == 'September': %}selected{% endif %}> September </option>
-						  <option value = 'October' {% if month == 'October': %}selected{% endif %}> October </option>
-						  <option value = 'November' {% if month == 'November': %}selected{% endif %}> November </option>
-						  <option value = 'December' {% if month == 'December': %}selected{% endif %}> December </option>
-						</SELECT>
-						Year: <input type="text" id="start_year" name="start_year" style="width:50px" {% if start_year: %} value = "{{start_year}}" {% endif %} > <span style=color:grey>(e.g., 2005)</span> <br>
-					
-						<span style=color:grey>Start date before:</span> Month:
-			 			<SELECT id="start_month_before" name="start_month_before">
-							<option value = ''></option>
-							<option value = 'January'> January </option>
-							<option value = 'February'> February </option>
-							<option value = 'March'> March </option>
-							<option value = 'April'> April </option>
-							<option value = 'May'> May </option>
-							<option value = 'June'> June </option>
-							<option value = 'July'> July </option>
-							<option value = 'August'> August </option>
-							<option value = 'September'> September </option>
-							<option value = 'October'> October </option>
-							<option value = 'November'> November </option>
-							<option value = 'December'> December </option>
-						</SELECT>
-						Year: <input type="text" id="start_year_before" name="start_year_before" style="width:50px"> <span style=color:grey>(e.g., 2005)</span>
-					</td>
-				</tr>
-							 
-			</table>
-				
+		<table border = 1>
 			<br>
-			 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			 
-			<i><b>Advanced Options ('All Studies' by default)</b></i>
-			
-			<div>
+
+		<table border = 1>
+			<caption><i><b>Basic options ('All Studies' by default)</b></i></caption>
+
+			<tr>
+				<td>
+					<span style=color:grey>Conditions:</span>
+					<input type="text" id="conditions" name="conditions" style="width:200px" {% if disease: %} value = "{{disease}}" {% endif %} style="display:none;" disabled="disabled">
+						<span style=color:grey>(e.g. 'Lung cancer')</span>
+				</td>
+			</tr>
+
+			<tr>
+				<td>
+					<span style=color:grey>Gender:</span>
+					<SELECT id="gender" name="gender">
+						<optgroup label="Please choose a gender">
+						<option value = 'all' selected="selected"></option>
+						<option value = 'both'> both </option>
+						<option value = 'male'> male </option>
+						<option value = 'female'> female </option>
+						</optgroup>
+					</SELECT>  (Both: {{distribution_gender["both"]}}%, Male: {{distribution_gender["male"]}}%, Female: {{distribution_gender["female"]}}%)
+					&nbsp;&nbsp;|&nbsp;&nbsp;
+					<span style=color:grey>Age:</span>
+					Minimum age: <input type="text" id="minimum_age" name="minimum_age" style="width:30px" {% if minimum_age: %} value = "{{minimum_age}}" {% endif %} >
+						Maximum age: <input type="text" id="maximum_age" name="maximum_age" style="width:30px" {% if maximum_age: %} value = "{{maximum_age}}" {% endif %} >
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<span style=color:grey>Start date after:</span> Month:
+					<SELECT id="start_month" name="start_month">
+					  <option value = '' {% if month == 'N/A': %}selected{% endif %}></option>
+					  <option value = 'January' {% if month == 'January': %}selected{% endif %}> January </option>
+					  <option value = 'February' {% if month == 'February': %}selected{% endif %}> February </option>
+					  <option value = 'March' {% if month == 'March': %}selected{% endif %}> March </option>
+					  <option value = 'April' {% if month == 'April': %}selected{% endif %}> April </option>
+					  <option value = 'May' {% if month == 'May': %}selected{% endif %}> May </option>
+					  <option value = 'June' {% if month == 'June': %}selected{% endif %}> June </option>
+					  <option value = 'July' {% if month == 'July': %}selected{% endif %}> July </option>
+					  <option value = 'August' {% if month == 'August': %}selected{% endif %}> August </option>
+					  <option value = 'September' {% if month == 'September': %}selected{% endif %}> September </option>
+					  <option value = 'October' {% if month == 'October': %}selected{% endif %}> October </option>
+					  <option value = 'November' {% if month == 'November': %}selected{% endif %}> November </option>
+					  <option value = 'December' {% if month == 'December': %}selected{% endif %}> December </option>
+					</SELECT>
+					Year: <input type="text" id="start_year" name="start_year" style="width:50px" {% if start_year: %} value = "{{start_year}}" {% endif %} > <span style=color:grey>(e.g., 2005)</span> <br>
+
+					<span style=color:grey>Start date before:</span> Month:
+					<SELECT id="start_month_before" name="start_month_before">
+						<option value = ''></option>
+						<option value = 'January'> January </option>
+						<option value = 'February'> February </option>
+						<option value = 'March'> March </option>
+						<option value = 'April'> April </option>
+						<option value = 'May'> May </option>
+						<option value = 'June'> June </option>
+						<option value = 'July'> July </option>
+						<option value = 'August'> August </option>
+						<option value = 'September'> September </option>
+						<option value = 'October'> October </option>
+						<option value = 'November'> November </option>
+						<option value = 'December'> December </option>
+					</SELECT>
+					Year: <input type="text" id="start_year_before" name="start_year_before" style="width:50px"> <span style=color:grey>(e.g., 2005)</span>
+				</td>
+			</tr>
+
+		</table>
+
+		<br>
+		 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+		<i><b>Advanced Options ('All Studies' by default)</b></i>
+
+		<div>
+		<table style="float: left" class="CSSTableGenerator">
+
+			<tr><td>Study Types:</td><tr>
+			<tr><td><input type="checkbox" name ="study_types" value="Interventional" onclick="fnchecked(this.checked);" {% if "Interventional" in study_types: %} checked = "checked" {% endif %}>Interventional ({{distribution_study_type["Interventional"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="study_types" value="Observational" {% if (study_types.count("Observational") == 2) or (("Observational" in study_types) and (study_types.count("Observational") == 1) and ("Observational [Patient Registry]" not in study_types)): %} checked = "checked" {% endif %}>Observational ({{distribution_study_type["Observational"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="study_types" value="Observational [Patient Registry]" {% if "Observational [Patient Registry]" in study_types: %} checked = "checked" {% endif %} >Observational [Patient Registry] ({{distribution_study_type["Observational [Patient Registry]"]}}%) </td><tr>
+			<tr><td><input type="checkbox" name ="study_types" value="Expanded Access" {% if "Expanded Access" in study_types: %} checked = "checked" {% endif %}>Expanded Access ({{distribution_study_type["Expanded Access"]}}%)</td><tr>
+		</table>
+		</div>
+
+		<div>
+			<!--<div id="divcheck" style="display:none" >-->
 			<table style="float: left" class="CSSTableGenerator">
-				
-				<tr><td>Study Types:</td><tr>
-				<tr><td><input type="checkbox" name ="study_types" value="Interventional" onclick="fnchecked(this.checked);" {% if "Interventional" in study_types: %} checked = "checked" {% endif %}>Interventional ({{distribution_study_type["Interventional"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="study_types" value="Observational" {% if (study_types.count("Observational") == 2) or (("Observational" in study_types) and (study_types.count("Observational") == 1) and ("Observational [Patient Registry]" not in study_types)): %} checked = "checked" {% endif %}>Observational ({{distribution_study_type["Observational"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="study_types" value="Observational [Patient Registry]" {% if "Observational [Patient Registry]" in study_types: %} checked = "checked" {% endif %} >Observational [Patient Registry] ({{distribution_study_type["Observational [Patient Registry]"]}}%) </td><tr>
-				<tr><td><input type="checkbox" name ="study_types" value="Expanded Access" {% if "Expanded Access" in study_types: %} checked = "checked" {% endif %}>Expanded Access ({{distribution_study_type["Expanded Access"]}}%)</td><tr>
+				<tr><td>Intervention types:</td><tr>
+				<tr><td><input type="checkbox" name ="intervention_types" value="Drug" {% if "Drug" in intervention_types: %} checked = "checked" {% endif %}>Drug ({{distribution_intervention_type["Drug"]}}%) </td><tr>
+				<tr><td><input type="checkbox" name ="intervention_types" value="Procedure" {% if "Procedure" in intervention_types: %} checked = "checked" {% endif %}>Procedure ({{distribution_intervention_type["Procedure"]}}%)</td><tr>
+				<tr><td><input type="checkbox" name ="intervention_types" value="Biological" {% if "Biological" in intervention_types: %} checked = "checked" {% endif %} >Biological ({{distribution_intervention_type["Biological"]}}%)</td><tr>
+				<tr><td><input type="checkbox" name ="intervention_types" value="Device" {% if "Device" in intervention_types: %} checked = "checked" {% endif %}>Device ({{distribution_intervention_type["Device"]}}%)</td><tr>
+				<tr><td><input type="checkbox" name ="intervention_types" value="Behavioral" {% if "Behavioral" in intervention_types: %} checked = "checked" {% endif %}>Behavioral ({{distribution_intervention_type["Behavioral"]}}%)</td><tr>
+				<tr><td><input type="checkbox" name ="intervention_types" value="Dietary Supplement" {% if "Dietary Supplement" in intervention_types: %} checked = "checked" {% endif %}>Dietary Supplement ({{distribution_intervention_type["Dietary Supplement"]}}%)</td><tr>
+				<tr><td><input type="checkbox" name ="intervention_types" value="Genetic" {% if "Genetic" in intervention_types: %} checked = "checked" {% endif %}>Genetic ({{distribution_intervention_type["Genetic"]}}%)</td><tr>
+				<tr><td><input type="checkbox" name ="intervention_types" value="Radiation" {% if "Radiation" in intervention_types: %} checked = "checked" {% endif %}>Radiation ({{distribution_intervention_type["Radiation"]}}%)</td><tr>
+				<tr><td><input type="checkbox" name ="intervention_types" value="Other" {% if "Other" in intervention_types: %} checked = "checked" {% endif %}>Other ({{distribution_intervention_type["Other"]}}%)</td><tr>
 			</table>
+		</div>
+		<div>
+		<table style="float: left" class="CSSTableGenerator">
+			<tr><td>Status:</td><tr>
+			<tr><td><span style=color:grey><font size=2><input type="checkbox" name ="status" value="Open Studies" {% if ("Open Studies" in statuses): %} checked = "checked" {% endif %}>Open Studies</font></span> </td><tr>
+			<tr><td><input type="checkbox" name ="status" value="Recruiting" {% if ("Recruiting" in statuses): %} checked = "checked" {% endif %}>Recruiting ({{distribution_status["Recruiting"]}}%) </td><tr>
+			<tr><td><input type="checkbox" name ="status" value="Not yet recruiting" {% if "Not yet recruiting" in statuses: %} checked = "checked" {% endif %}>Not yet recruiting ({{distribution_status["Not yet recruiting"]}}%)</td><tr>
+			<tr><td><span style=color:grey><font size=2><input type="checkbox" name ="status" value="Closed Studies" {% if ("Closed Studies" in statuses): %} checked = "checked" {% endif %}>Closed Studies</font></span></td><tr>
+			<tr><td><input type="checkbox" name ="status" value="Active, not recruiting" {% if "Active, not recruiting" in statuses: %} checked = "checked" {% endif %} >Active, not recruiting ({{distribution_status["Active, not recruiting"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="status" value="Completed" {% if "Completed" in statuses: %} checked = "checked" {% endif %}>Completed ({{distribution_status["Completed"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="status" value="Withdrawn" {% if "Withdrawn" in statuses: %} checked = "checked" {% endif %}>Withdrawn ({{distribution_status["Withdrawn"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="status" value="Suspended" {% if "Suspended" in statuses: %} checked = "checked" {% endif %} >Suspended ({{distribution_status["Suspended"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="status" value="Terminated" {% if "Terminated" in statuses: %} checked = "checked" {% endif %} >Terminated ({{distribution_status["Terminated"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="status" value="Enrolling by invitation" {% if "Enrolling by invitation" in statuses: %} checked = "checked" {% endif %} >Enrolling by invitation ({{distribution_status["Enrolling by invitation"]}}%)</td><tr>
+		</table>
+		</div>
 
+		<table class="CSSTableGenerator">
+			<tr><td>Sponsor Types:</td><tr>
+			<tr><td><input type="checkbox" name ="agency_types" value="NIH" {% if "NIH" in agency_types: %} checked = "checked" {% endif %} >NIH ({{distribution_sponsor_type["['NIH']"]}}%) </td><tr>
+			<tr><td><input type="checkbox" name ="agency_types" value="Industry" {% if "Industry" in agency_types: %} checked = "checked" {% endif %}>Industry ({{distribution_sponsor_type["['Industry']"]}}%) </td><tr>
+			<tr><td><input type="checkbox" name ="agency_types" value="U.S. Fed" {% if "U.S. Fed" in agency_types: %} checked = "checked" {% endif %}>Other U.S. Federal Agency ({{distribution_sponsor_type["['U.S. Fed']"]}}%) </td><tr>
+			<tr><td><input type="checkbox" name ="agency_types" value="Other" {% if "Other" in agency_types: %} checked = "checked" {% endif %}>Other ({{distribution_sponsor_type["['Other']"]}}%) </td><tr>
 
-			<div>
-				<!--<div id="divcheck" style="display:none" >-->
-				<table style="float: left" class="CSSTableGenerator">
-					<tr><td>Intervention types:</td><tr>
-					<tr><td><input type="checkbox" name ="intervention_types" value="Drug" {% if "Drug" in intervention_types: %} checked = "checked" {% endif %}>Drug ({{distribution_intervention_type["Drug"]}}%) </td><tr>
-					<tr><td><input type="checkbox" name ="intervention_types" value="Procedure" {% if "Procedure" in intervention_types: %} checked = "checked" {% endif %}>Procedure ({{distribution_intervention_type["Procedure"]}}%)</td><tr>
-					<tr><td><input type="checkbox" name ="intervention_types" value="Biological" {% if "Biological" in intervention_types: %} checked = "checked" {% endif %} >Biological ({{distribution_intervention_type["Biological"]}}%)</td><tr>
-					<tr><td><input type="checkbox" name ="intervention_types" value="Device" {% if "Device" in intervention_types: %} checked = "checked" {% endif %}>Device ({{distribution_intervention_type["Device"]}}%)</td><tr>
-					<tr><td><input type="checkbox" name ="intervention_types" value="Behavioral" {% if "Behavioral" in intervention_types: %} checked = "checked" {% endif %}>Behavioral ({{distribution_intervention_type["Behavioral"]}}%)</td><tr>
-					<tr><td><input type="checkbox" name ="intervention_types" value="Dietary Supplement" {% if "Dietary Supplement" in intervention_types: %} checked = "checked" {% endif %}>Dietary Supplement ({{distribution_intervention_type["Dietary Supplement"]}}%)</td><tr>
-					<tr><td><input type="checkbox" name ="intervention_types" value="Genetic" {% if "Genetic" in intervention_types: %} checked = "checked" {% endif %}>Genetic ({{distribution_intervention_type["Genetic"]}}%)</td><tr>
-					<tr><td><input type="checkbox" name ="intervention_types" value="Radiation" {% if "Radiation" in intervention_types: %} checked = "checked" {% endif %}>Radiation ({{distribution_intervention_type["Radiation"]}}%)</td><tr>
-					<tr><td><input type="checkbox" name ="intervention_types" value="Other" {% if "Other" in intervention_types: %} checked = "checked" {% endif %}>Other ({{distribution_intervention_type["Other"]}}%)</td><tr>
-				</table>
-			</div>
-									
-			<table style="float: left" class="CSSTableGenerator">
-				<tr><td>Status:</td><tr>
-				<tr><td><span style=color:grey><font size=2><input type="checkbox" name ="status" value="Open Studies" {% if ("Open Studies" in statuses): %} checked = "checked" {% endif %}>Open Studies</font></span> </td><tr>
-				<tr><td><input type="checkbox" name ="status" value="Recruiting" {% if ("Recruiting" in statuses): %} checked = "checked" {% endif %}>Recruiting ({{distribution_status["Recruiting"]}}%) </td><tr>
-				<tr><td><input type="checkbox" name ="status" value="Not yet recruiting" {% if "Not yet recruiting" in statuses: %} checked = "checked" {% endif %}>Not yet recruiting ({{distribution_status["Not yet recruiting"]}}%)</td><tr>
-				<tr><td><span style=color:grey><font size=2><input type="checkbox" name ="status" value="Closed Studies" {% if ("Closed Studies" in statuses): %} checked = "checked" {% endif %}>Closed Studies</font></span></td><tr>
-				<tr><td><input type="checkbox" name ="status" value="Active, not recruiting" {% if "Active, not recruiting" in statuses: %} checked = "checked" {% endif %} >Active, not recruiting ({{distribution_status["Active, not recruiting"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="status" value="Completed" {% if "Completed" in statuses: %} checked = "checked" {% endif %}>Completed ({{distribution_status["Completed"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="status" value="Withdrawn" {% if "Withdrawn" in statuses: %} checked = "checked" {% endif %}>Withdrawn ({{distribution_status["Withdrawn"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="status" value="Suspended" {% if "Suspended" in statuses: %} checked = "checked" {% endif %} >Suspended ({{distribution_status["Suspended"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="status" value="Terminated" {% if "Terminated" in statuses: %} checked = "checked" {% endif %} >Terminated ({{distribution_status["Terminated"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="status" value="Enrolling by invitation" {% if "Enrolling by invitation" in statuses: %} checked = "checked" {% endif %} >Enrolling by invitation ({{distribution_status["Enrolling by invitation"]}}%)</td><tr>
-			</table>
-			</div>
+		</table>
 
-			<table class="CSSTableGenerator">
-				<tr><td>Sponsor Types:</td><tr>
-				<tr><td><input type="checkbox" name ="agency_types" value="NIH" {% if "NIH" in agency_types: %} checked = "checked" {% endif %} >NIH ({{distribution_sponsor_type["['NIH']"]}}%) </td><tr>
-				<tr><td><input type="checkbox" name ="agency_types" value="Industry" {% if "Industry" in agency_types: %} checked = "checked" {% endif %}>Industry ({{distribution_sponsor_type["['Industry']"]}}%) </td><tr>
-				<tr><td><input type="checkbox" name ="agency_types" value="U.S. Fed" {% if "U.S. Fed" in agency_types: %} checked = "checked" {% endif %}>Other U.S. Federal Agency ({{distribution_sponsor_type["['U.S. Fed']"]}}%) </td><tr>
-				<tr><td><input type="checkbox" name ="agency_types" value="Other" {% if "Other" in agency_types: %} checked = "checked" {% endif %}>Other ({{distribution_sponsor_type["['Other']"]}}%) </td><tr>
+		<table class="CSSTableGenerator">
+			<tr><td>Phases:</td><tr>
+			<tr><td><i>Check multiple phases to stratify the distributions of studies or enrollment by phases</i> </td><tr>
+			<tr><td><input type="checkbox" name ="phase" value="Phase 0" {% if "Phase 0" in phases: %} checked = "checked" {% endif %}>Phase 0 ({{distribution_phase["Phase 0"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="phase" value="Phase 1" {% if "Phase 1" in phases: %} checked = "checked" {% endif %}>Phase 1 ({{distribution_phase["Phase 1"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="phase" value="Phase 2" {% if "Phase 2" in phases: %} checked = "checked" {% endif %}>Phase 2 ({{distribution_phase["Phase 2"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="phase" value="Phase 3" {% if "Phase 3" in phases: %} checked = "checked" {% endif %}>Phase 3 ({{distribution_phase["Phase 3"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="phase" value="Phase 4" {% if "Phase 4" in phases: %} checked = "checked" {% endif %}>Phase 4 ({{distribution_phase["Phase 4"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="phase" value="N/A" {% if "N/A" in phases: %} checked = "checked" {% endif %}>Not applicable or not specified ({{distribution_phase["N/A"]}}%)</td><tr>
+		</table>
 
-			</table>
+		<table class="CSSTableGenerator" style="float: left">
+			<tr><td>Study design - intervention model:</td><tr>
+			<tr><td><input type="checkbox" name ="intervention_model" value="Parallel Assignment" >Parallel ({{distribution_intervention_model["Parallel Assignment"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="intervention_model" value="Factorial Assignment" >Factorial ({{distribution_intervention_model["Factorial Assignment"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="intervention_model" value="Crossover Assignment">Crossover
+				({{distribution_intervention_model["Crossover Assignment"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="intervention_model" value="Single Group Assignment" >Single Group
+				({{distribution_intervention_model["Single Group Assignment"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="intervention_model" value="" >Not applicable or not specified ({{distribution_intervention_model[""]}}%)</td><tr>
+		</table>
 
-			<table class="CSSTableGenerator">
-				<tr><td>Phases:</td><tr>
-				<tr><td><i>Check multiple phases to stratify the distributions of studies or enrollment by phases</i> </td><tr>
-				<tr><td><input type="checkbox" name ="phase" value="Phase 0" {% if "Phase 0" in phases: %} checked = "checked" {% endif %}>Phase 0 ({{distribution_phase["Phase 0"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="phase" value="Phase 1" {% if "Phase 1" in phases: %} checked = "checked" {% endif %}>Phase 1 ({{distribution_phase["Phase 1"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="phase" value="Phase 2" {% if "Phase 2" in phases: %} checked = "checked" {% endif %}>Phase 2 ({{distribution_phase["Phase 2"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="phase" value="Phase 3" {% if "Phase 3" in phases: %} checked = "checked" {% endif %}>Phase 3 ({{distribution_phase["Phase 3"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="phase" value="Phase 4" {% if "Phase 4" in phases: %} checked = "checked" {% endif %}>Phase 4 ({{distribution_phase["Phase 4"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="phase" value="N/A" {% if "N/A" in phases: %} checked = "checked" {% endif %}>Not applicable or not specified ({{distribution_phase["N/A"]}}%)</td><tr>
-			</table>
-			
-			<table class="CSSTableGenerator" style="float: left">
-				<tr><td>Study design - intervention model:</td><tr>
-				<tr><td><input type="checkbox" name ="intervention_model" value="Parallel Assignment" >Parallel ({{distribution_intervention_model["Parallel Assignment"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="intervention_model" value="Factorial Assignment" >Factorial ({{distribution_intervention_model["Factorial Assignment"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="intervention_model" value="Crossover Assignment">Crossover
-					({{distribution_intervention_model["Crossover Assignment"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="intervention_model" value="Single Group Assignment" >Single Group
-					({{distribution_intervention_model["Single Group Assignment"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="intervention_model" value="N/A" >Not applicable or not specified ({{distribution_intervention_model["N/A"]}}%)</td><tr>
-			</table>
-			
-			<table class="CSSTableGenerator" style="float: left">
-				<tr><td>Study design - allocation:</td><tr>
-				<tr><td><input type="checkbox" name ="allocation" value="Randomized"> Randomized ({{distribution_allocation["Randomized"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="allocation" value="Non-Randomized"> Non-Randomized ({{distribution_allocation["Non-Randomized"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="allocation" value="N/A" >Not applicable or not specified ({{distribution_allocation["N/A"]}}%) </td><tr>
-			</table>
-			
-			<table class="CSSTableGenerator" style="float: left">
-				<tr><td>Study design - time perspective:</td><tr>
-				<tr><td><input type="checkbox" name ="time_perspective" value="Cross-Sectional"> Cross-Sectional ({{distribution_time_perspective["Cross-Sectional"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="time_perspective" value="Longitudinal"> Longitudinal ({{distribution_time_perspective["Non-Longitudinal"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="time_perspective" value="Prospective"> Prospective ({{distribution_time_perspective["Prospective"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="time_perspective" value="Retrospective"> Retrospective ({{distribution_time_perspective["Retrospective"]}}%)</td><tr>
-				<tr><td><input type="checkbox" name ="time_perspective" value="N/A">Not applicable or not specified ({{distribution_time_perspective["N/A"]}}%) </td><tr>
-			</table>
+		<table class="CSSTableGenerator" style="float: left">
+			<tr><td>Study design - allocation:</td><tr>
+			<tr><td><input type="checkbox" name ="allocation" value="Randomized"> Randomized ({{distribution_allocation["Randomized"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="allocation" value="Non-Randomized"> Non-Randomized ({{distribution_allocation["Non-Randomized"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="allocation" value="" >Not applicable or not specified ({{distribution_allocation[""]}}%) </td><tr>
+		</table>
 
-			<!--
-			<table class="CSSTableGenerator" style="float: left">
-				<tr><td>Study design - masking:</td><tr>
-				<tr><td><input type="checkbox" name ="masking" value="Single Blind"> Single Blind</td><tr>
-				<tr><td><input type="checkbox" name ="masking" value="Double Blind"> Double Blind </td><tr>
-				<tr><td><input type="checkbox" name ="masking" value="N/A" >Not specified</td><tr>
-			</table>
-			-->
-			
-			<table class="CSSTableGenerator">
-				<tr>
-					<td>
-						Distributional analysis type:
-					</td>
-				<tr>
-				<tr>
-					<td>
-						<SELECT id="aggregate_analysis_type" name="aggregate_analysis_type">
-							<option disabled="disabled" value = 'Distribution of trials' {% if aggregate_analysis_type == 'Distribution of trials': %}selected{% endif %}>Distribution of number of studies </option>
-							<option disabled="disabled" value = 'Aggregated enrollment' {% if aggregate_analysis_type == 'Aggregated enrollment': %}selected{% endif %}>Distribution of enrollment</option>
-							<option value = 'Distribution of boundary values' {% if aggregate_analysis_type == 'Distribution of boundary values': %}selected{% endif %}>Other distributions</option>
-							<!--
-							<option value = 'All' {% if aggregate_analysis_type == 'All': %}selected{% endif %}>All</option>
-							 -->
-						</SELECT>
-					</td>
-				<tr>
-			</table>
+		<table class="CSSTableGenerator" style="float: left">
+			<tr><td>Study design - time perspective:</td><tr>
+			<tr><td><input type="checkbox" name ="time_perspective" value="Cross-Sectional"> Cross-Sectional ({{distribution_time_perspective["Cross-Sectional"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="time_perspective" value="Longitudinal"> Longitudinal ({{distribution_time_perspective["Non-Longitudinal"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="time_perspective" value="Prospective"> Prospective ({{distribution_time_perspective["Prospective"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="time_perspective" value="Retrospective"> Retrospective ({{distribution_time_perspective["Retrospective"]}}%)</td><tr>
+			<tr><td><input type="checkbox" name ="time_perspective" value="">Not applicable or not specified ({{distribution_time_perspective[""]}}%) </td><tr>
+		</table>
 
-			<br><br>
-				
-		</FORM>
+		<table class="CSSTableGenerator" style="float: left">
+			<tr><td>Pattern:</td><tr>
+			{% for pt,percent in distribution_time_pattern %}
+			<tr><td><input type="checkbox" name ="pattern_option" value="{{pt}}"> {{pt}}({{percent}}%)</td><tr>
+			{% endfor %}
+		</table>
+
+		<br><br>
+		</table>
+	</FORM>
 
 </div>
 
