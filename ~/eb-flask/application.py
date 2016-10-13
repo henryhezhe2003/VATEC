@@ -70,7 +70,7 @@ def build_query():
 
 @application.route('/analysis',methods=['POST','GET'])
 def analysis():
-    _analysis(mysql)
+    return _analysis(mysql)
 
 @application.route('/download', methods=['POST','GET'])
 def download():

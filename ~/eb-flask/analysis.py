@@ -47,6 +47,6 @@ def _analysis(mysql):
 
 
     if (len(modal_boundary_output_simple) > 0):
-        return flask.render_template('duration.html', **locals())
+        return flask.render_template('analysis.html', **locals())
 
     return "Builder page disease %s" %disease +"; and the variable is %s" %name
