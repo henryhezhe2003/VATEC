@@ -2,7 +2,7 @@ import os, re, csv, ast, csv
 import math
 import jinja2
 jinja_environment = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
-import flask
+import flask,string,random
 from flask.ext.mysql import MySQL
 
 from features import _show_frequent_features
@@ -10,6 +10,7 @@ from builder import _build_query
 from raw_data import _raw_data
 from download import _download
 from analysis import _analysis
+from download_raw import _download_raw
 
 mysql = MySQL()
 application = flask.Flask(__name__)
@@ -26,7 +27,6 @@ mysql.init_app(application)
 #Set application.debug=true to enable tracebacks on Beanstalk log output.
 #Make sure to remove this line before deploying to production.
 application.debug=True
-
 
 # init semantic group list
 g_sty = {}
@@ -76,6 +76,9 @@ def analysis():
 def download():
     return _download(mysql)
 
+@application.route('/download_raw', methods=['POST','GET'])
+def download_raw():
+    return _download_raw(mysql)
 # start point of the application
 if __name__ == '__main__':
     application.run(host='0.0.0.0', debug=True)

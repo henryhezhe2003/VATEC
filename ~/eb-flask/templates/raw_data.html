@@ -609,19 +609,26 @@ function change_option(){
 		</div>
         #}
 	    <INPUT type="submit" name="button2" width='200px' value=" Process " onclick="if (check_condition()){show_loading();}else return false;">&nbsp;&nbsp;&nbsp;
-	    <input type="text" id="input_tid" name="input_tid" placeholder = "Input a clinical trials" >
+	    <input type="text" name="input_tid" placeholder = "Input a clinical trials" >
     </FORM>
 
     {% if raw_data_list %}
 	<b>Clinical study ID</b>: ({{input_tid}}) <br>
 	<b>Number of UMLS terms</b>: {{num_umls_term}}<br>
-	<b>Brief title:</b>: {{tidInfo["brief_title"]}}<br>
+	<b>Brief title</b>: {{tidInfo["brief_title"]}}<br>
 	<b>Overall status</b>: {{tidInfo["overall_status"]}}<br>
 	<b>Study type</b>: {{tidInfo["study_type"]}}<br>
 	<b>Phase</b>: {{tidInfo["phase"]}}<br>
 	<b>Intervention Type</b>: {{tidInfo["intervention_type"]}}<br>
 	<b>Intervention Name</b>: {{tidInfo["intervention_name"]}}<br>
-	<b>Link to ClinicalTrials.gov</b>: <a href="https://clinicaltrials.gov/ct2/show/{{input_tid}}">{{input_tid}}</a><br>
+	<b>Link to ClinicalTrials.gov</b>: <a  target="_blank" href="https://clinicaltrials.gov/ct2/show/{{input_tid}}">{{input_tid}}</a><br>
+
+	<FORM action="{{ url_for('download_raw') }}" method="post">
+		<input type="hidden" id="cols_title_str" name="cols_title_str" value="{{cols_title_str}}" >
+		<input type="hidden" id="sql_data" name="sql_data" value="{{sql_data}}">
+		<input type="hidden" name="input_tid" value="{{input_tid}}">
+		<button type="submit" id="button_csv" name="button_csv" style="height: 40px; width: 200px;" value=" Download data in csv "><font size = 2> Export data in CSV </font> </button>
+	</FORM> <br>
 
 
 	<table border = 1 class="CSSTableGenerator">

@@ -19,26 +19,27 @@ def _raw_data(mysql,diseases_list,g_sty):
 
         raw_data_list = True
         num_umls_term = 0
-        cols = "Disease,type,pattern,duration,month,negation,sty,org_str,cui_str,sentence".split(",")
-        for col in cols:
+        cols_title_str = "Disease,type,pattern,duration,month,negation,sty,cui,org_str,cui_str,sentence"
+        cols_title = cols_title_str.split(",")
+        for col in cols_title:
             title_output += "%s</b></td><td><b>" % (col)
         title_output += "</b></td></tr>"
-
-        sql = "select task,type,pattern,duration,month,neg,sty,org_str,cui_str,sentence from cancer_cui where tid = '%s' and (nested = 'None' or nested='nesting') " % (input_tid)
-        cur.execute(sql)
+        sql_var = [input_tid]
+        sql_data = "select task,type,pattern,duration,month,neg,sty,cui,org_str,cui_str,sentence from cancer_cui where tid = %s and (nested = 'None' or nested='nesting') "
+        cur.execute(sql_data, sql_var)
         for row in cur.fetchall():
             num_umls_term += 1
             data_output += "<tr><td>"
             for idx,f in enumerate(row):
-                if idx == cols.index("sty"): f = g_sty[f][3]
+                if idx == cols_title.index("sty"): f = g_sty[f][3]
                 data_output += "%s</td><td>" % (str(f))
             data_output += "</td></tr>"
 
         cols = "tid,brief_title,official_title,location,agency,overall_status,start_date,gender,minimum_age,maximum_age,enrollment,conditions,phase,study_pop," \
                "intervention_type,intervention_name,authority,source,study_type,agency_type,enrollment_type,minimum_age_in_year,maximum_age_in_year," \
                "intervention_model,allocation,masking,primary_purpose,endpoint_classification,observational_model,time_perspective".split(",")
-        sql = "select * from meta where tid='%s' limit 1 " % (input_tid)
-        cur.execute(sql)
+        sql = "select * from meta where tid=%s limit 1 "
+        cur.execute(sql, sql_var)
         tidInfo = {}
         for row in cur.fetchall():
             tidInfo["brief_title"]=row[cols.index("brief_title")]

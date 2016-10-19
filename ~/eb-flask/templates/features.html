@@ -584,7 +584,13 @@ function change_option(){
 
 	{% if distribution_numeric_features %}
 		<b>Condition</b>: {{disease}} <br>
-		<b>Number of UMLS terms</b>: {{num_trials_with_disease}} <br><br>
+		<b>Number of UMLS terms</b>: {{num_cui_with_disease}} <br>
+		<b>Number of Clinical Trials</b>: {{num_trials_with_disease}} <br><br>
+		<b>Filter applied on Clinical Trials</b>:<br>
+        {% for key in filter_dict %}
+			<b>{{key}}</b>: {{filter_dict[key]}}<br>
+        {% endfor %}
+        <br><br>
 
 		<table border = 1 class="CSSTableGenerator">
 			<tr><td><b>UMLS term</b></td><td><b>CUI</b></td><td><b>Semantic group</b></td><td><b>Semantic type</b></td><td><b>Frequency</b></td></tr>
@@ -598,6 +604,8 @@ function change_option(){
 			<FORM action="{{ url_for('analysis') }}" method="post" onsubmit='showLoading();'>
 				<input type="hidden" name="disease" value="{{ disease }}">
 				<input type="hidden" name="filter_builder" value="{{ filter_builder }}">
+				<input type="hidden" name="sql_var_str" value="{{ sql_var_str }}">
+				<input type="hidden" name="filter_description" value="{{ filter_description }}">
 				<b>Quantitative Eligibility Features (with duration)</b>:
 				<SELECT id="featureInfo" name="featureInfo">
 					<optgroup label="Please choose a variable to start">

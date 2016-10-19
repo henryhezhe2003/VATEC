@@ -16,11 +16,12 @@ def _build_query(mysql):
     db = mysql.connect()
     cur = db.cursor()
 
-    curr_condition = "task = '%s'"  %(disease)
+    sql_var = [disease]
+    curr_condition = "task = %s"
     curr_tid = "SELECT distinct tid from cancer_cui where %s" %(curr_condition)
     # get number of trials of the selected disease
     sql1 = "SELECT count(cui), count(distinct tid) FROM cancer_cui where %s " %(curr_condition)
-    cur.execute(sql1)
+    cur.execute(sql1, sql_var)
     total_num_cui = 0
     total_num_tid = 0
     for row in cur.fetchall():
@@ -31,7 +32,7 @@ def _build_query(mysql):
     # get distribution of study types
     distribution_study_type = {}
     sql3 = "SELECT T.study_type, count(distinct T.tid) FROM meta T WHERE T.tid in (SELECT tid from cancer_cui where %s)" %(curr_condition)  + " GROUP BY T.study_type"
-    cur.execute(sql3)
+    cur.execute(sql3, sql_var)
     for row3 in cur.fetchall():
         study_type = row3[0]
         percentage_study_type = "%.2f" %(float(row3[1])/total_num_tid * 100)
@@ -49,12 +50,12 @@ def _build_query(mysql):
     # get distribution of intervention types
     distribution_intervention_type = {}
     sql4_all = "SELECT COUNT(DISTINCT TID) FROM meta T WHERE intervention_type !='' AND TID in (%s)" % (curr_tid)
-    cur.execute(sql4_all)
+    cur.execute(sql4_all,sql_var)
     for row4_all in cur.fetchall():
         num_trials_with_intervention_type = int(row4_all[0])
 
     sql4 = "SELECT T.intervention_type, count(distinct T.tid) FROM meta T WHERE T.tid in (%s)" %(curr_tid) +" GROUP BY T.intervention_type"
-    cur.execute(sql4)
+    cur.execute(sql4,sql_var)
     for row4 in cur.fetchall():
         intervention_type = row4[0]
         percentage_intervention_type = "%.2f" %(float(row4[1])/num_trials_with_intervention_type * 100)
@@ -82,7 +83,7 @@ def _build_query(mysql):
     # get distribution of status
     distribution_status = {}
     sql5 = "SELECT T.overall_status, count(distinct T.tid) FROM meta T WHERE T.tid in (%s)" %(curr_tid) + " GROUP BY T.overall_status"
-    cur.execute(sql5)
+    cur.execute(sql5,sql_var)
     for row5 in cur.fetchall():
         status = row5[0]
         percentage_status = "%.2f" %(float(row5[1])/total_num_tid * 100)
@@ -108,7 +109,7 @@ def _build_query(mysql):
     # get distribution of sponsor type
     distribution_sponsor_type = {}
     sql6 = "SELECT T.agency_type, count(distinct T.tid) FROM meta T WHERE T.tid in (%s)" %(curr_tid) +" GROUP BY T.agency_type"
-    cur.execute(sql6)
+    cur.execute(sql6, sql_var)
     for row6 in cur.fetchall():
         sponsor_type = row6[0]
         percentage_sponsor_type = "%.2f" %(float(row6[1])/total_num_tid * 100)
@@ -127,7 +128,7 @@ def _build_query(mysql):
     # get distribution of phase
     distribution_phase = {}
     sql7 = "SELECT T.phase, count(distinct T.tid) FROM meta T WHERE T.tid in (%s)" %(curr_tid) + " GROUP BY T.phase"
-    cur.execute(sql7)
+    cur.execute(sql7, sql_var)
     for row7 in cur.fetchall():
         phase = row7[0]
         percentage_phase = "%.2f" %(float(row7[1])/total_num_tid * 100)
@@ -149,7 +150,7 @@ def _build_query(mysql):
     # get distribution of gender
     distribution_gender = {}
     sql8 = "SELECT T.gender, count(distinct T.tid) FROM meta T WHERE T.tid in (%s)" %(curr_tid) +" GROUP BY T.gender"
-    cur.execute(sql8)
+    cur.execute(sql8, sql_var)
     for row8 in cur.fetchall():
         gender = row8[0]
         percentage_gender = "%.2f" %(float(row8[1])/total_num_tid * 100)
@@ -166,7 +167,7 @@ def _build_query(mysql):
     distribution_intervention_model = {}
 
     sql9 = "SELECT T.intervention_model, count(*) FROM meta T WHERE T.tid in (%s)" % (curr_tid) + " GROUP BY T.intervention_model"
-    cur.execute(sql9)
+    cur.execute(sql9, sql_var)
     for row9 in cur.fetchall():
         intervention_model = row9[0]
         percentage_intervention_model = "%.2f" %(float(row9[1])/total_num_tid * 100)
@@ -187,7 +188,7 @@ def _build_query(mysql):
     distribution_allocation = {}
 
     sql10 = "SELECT T.allocation, count(distinct T.tid) FROM meta T WHERE T.tid in (%s)" %(curr_tid) + " GROUP BY T.allocation"
-    cur.execute(sql10)
+    cur.execute(sql10, sql_var)
     for row10 in cur.fetchall():
         allocation = row10[0]
         percentage_allocation = "%.2f" %(float(row10[1])/total_num_tid * 100)
@@ -204,7 +205,7 @@ def _build_query(mysql):
     distribution_time_perspective = {}
 
     sql11 = "SELECT T.time_perspective, count(distinct T.tid) FROM meta T WHERE T.tid in (%s)" %(curr_tid) +" GROUP BY T.time_perspective"
-    cur.execute(sql11)
+    cur.execute(sql11, sql_var)
     for row11 in cur.fetchall():
         time_perspective = row11[0]
         percentage_time_perspective = "%.2f" %(float(row11[1])/total_num_tid * 100)
@@ -224,7 +225,7 @@ def _build_query(mysql):
     # get pattern list
     distribution_time_pattern = []
     sql12 = "SELECT V.pattern, count(*) as freq FROM cancer_cui V WHERE %s" %(curr_condition) +" GROUP BY V.pattern order by freq desc"
-    cur.execute(sql12)
+    cur.execute(sql12, sql_var)
     for row11 in cur.fetchall():
         pt = row11[0]
         percentage_pattern = "%.2f" %(float(row11[1])/total_num_cui * 100)
@@ -242,8 +243,9 @@ def _build_query(mysql):
 def generate_initial_value_spectrum(cur, cui,sty, disease):
 
     trials_exps = {}
-    sql = "SELECT month, count(*) from cancer_cui where cui='%s' and sty = '%s' and task = '%s' and pattern != 'None' group by month order by month" % (cui,sty,disease)
-    cur.execute(sql)
+    sql_var = [cui,sty,disease]
+    sql = "SELECT month, count(*) from cancer_cui where cui=%s and sty = %s and task = %s and pattern != 'None' group by month order by month"
+    cur.execute(sql,sql_var)
 
     output = []
     upper_value = 0
@@ -258,3 +260,6 @@ def generate_initial_value_spectrum(cur, cui,sty, disease):
 
 def remove_duplicates(l):
     return list(set(l))
+
+
+
