@@ -8,7 +8,6 @@ import flask
 from utils import encode
 
 def _show_frequent_features(mysql,g_sty):
-    var, aggregator_output, minimum_value, maximum_value, lower, upper, value_range_verification_output, enrollment_value, value_spectrum_output, num_trials, phase_query, condition_query, query_used, phases, conditions, status_query, statuses, study_type_query, study_types, intervention_type_query, intervention_types, agency_type_query, agency_types, gender_query, gender, modal_boundary_output, enrollment_spectrum_output, num_of_trials_output, detail_enrollment_spectrum_output,value_spectrum_output_trial_ids, initial_value_spectrum, on_option_page, start_date_query, start_date, age_query, value_range_distribution_output,value_range_width_distribution_output, average_enrollment_spectrum_output, disease, intervention_model_query, allocation_query, intervention_models, allocations, time_perspective_query, time_perspectives, start_date_before, disease_query = '', "", '', '', '', '', '', '', "", [], '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', "", "", "", "", "", "", '', '', '', '', "", "", "", '', '','','','','','','',''
 
     topk = flask.request.form['topk']
     disease = flask.request.form['disease']
@@ -66,6 +65,7 @@ def _show_frequent_features(mysql,g_sty):
         filter_description += "\n"
 
     # check status option and generate part of the query
+    status_query = ""
     if (len(status_option) == 0):
         status_query += " (1=1)"
     else:
@@ -85,6 +85,7 @@ def _show_frequent_features(mysql,g_sty):
         filter_description += "\n"
 
     # check study type option and generate part of the query
+    study_type_query = ""
     if (len(study_type_option) == 0):
         study_type_query = " (T.study_type LIKE '%%')"
     else:
@@ -98,6 +99,7 @@ def _show_frequent_features(mysql,g_sty):
         filter_description += "\n"
 
     # check intervention type option and generate part of the query
+    intervention_type_query = ""
     if (len(intervention_type_option) == 0):
         intervention_type_query = " (T.intervention_type LIKE '%%')"
     else:
@@ -111,6 +113,7 @@ def _show_frequent_features(mysql,g_sty):
         filter_description+= "\n"
 
     # check agency type option and generate part of the query
+    agency_type_query = ""
     if (len(agency_type_option) == 0):
         agency_type_query = " (T.agency_type LIKE '%%')"
     else:
@@ -149,28 +152,31 @@ def _show_frequent_features(mysql,g_sty):
 
     # check minimum_age, maximum_age and generate age_query
 
-    minimum_age = 0
-    maximum_age = 150
+    minimum_age = -1
+    maximum_age = 200
+    age_query = ""
 
     if (minimum_age_option != ''):
         try:
             minimum_age = float(minimum_age_option)
         except TypeError:
-            minimum_age = 0
+            pass
 
     if (maximum_age_option != ''):
         try:
             maximum_age = float(maximum_age_option)
         except TypeError:
-            maximum_age = 150
+            pass
 
-    #age_query = " (T.minimum_age_in_year >= %.9f" %float(minimum_age) +" and T.maximum_age_in_year <= %.9f)" %float(maximum_age)
     if len(minimum_age_option) > 0 or len(maximum_age_option)>0:
-        filter_description += "Age=Not used\n"
-    age_query = ("1=1")
-
+        filter_description += "Age= [%s, %s]" % (minimum_age_option, maximum_age_option)
+        age_query = " (T.minimum_age_in_year >= %s and T.maximum_age_in_year <= %s)"
+        sql_var += [str(minimum_age), str(maximum_age)]
+    else:
+        age_query = ("1=1")
 
     # check intervention model option and generate part of the query
+    intervention_model_query = ""
     if (len(intervention_model_option) == 0):
         intervention_model_query = " (T.intervention_model LIKE '%%')"
     else:
@@ -184,6 +190,7 @@ def _show_frequent_features(mysql,g_sty):
         filter_description += "\n"
 
     # check allocation option and generate part of the query
+    allocation_query = ""
     if (len(allocation_option) == 0):
         allocation_query = " (T.allocation LIKE '%%')"
     else:
@@ -197,6 +204,7 @@ def _show_frequent_features(mysql,g_sty):
         filter_description += "\n"
 
     # check time perspective option and generate part of the query
+    time_perspective_query = ""
     if (len(time_perspective_option) == 0):
         #time_perspective_query = " (T.time_perspective LIKE '%%')"
         time_perspective_query = " (1=1)"
