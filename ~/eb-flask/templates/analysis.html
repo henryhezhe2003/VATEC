@@ -371,7 +371,7 @@ function showLoading() {
 <script type="text/javascript">
 // judge if there is input text
 	function check_input(){
-	  if (!document.getElementById("variable").value || document.getElementById("variable").value == "None")
+	  if (!document.getElementById("featureInfo").value || document.getElementById("featureInfo").value == "None")
 	  {
 	  	alert("Please select a variable for processing");
 	  	return false;
@@ -559,7 +559,36 @@ function showLoading() {
 		<div id="chart_div" style="top: 0px; width: 1100px; height: 500px;"></div>
 		<div id="chart_pattern" style="top: 0px; width: 1100px; height: 500px;"></div>
 		<BR>
+		<BR>
+		<b>Top 100 terms by frequency that is co-occurrence with the current term: {{featureName}}</b>
+		<BR>
 
+		<table border = 1 class="CSSTableGenerator">
+		<tr><td><b>UMLS term</b></td><td><b>CUI</b></td><td><b>Semantic group</b></td><td><b>Semantic type</b></td><td><b>Co-occurrence Frequency</b></td></tr>
+		{% for name, cui, sty, sty_desc, group, freq in cooccur_freq_output_simple %}
+		<tr><td>{{name}}</td><td>{{cui}}</td><td>{{group}}</td><td>{{sty}} ({{sty_desc}})</td><td>{{freq}}</td></tr>
+		{% endfor %}
+
+
+		</table>
+			<FORM action="{{ url_for('analysis') }}" method="post" onsubmit='showLoading();'>
+				<input type="hidden" name="disease" value="{{ disease }}">
+				<input type="hidden" name="filter_builder" value="{{ filter_builder_tmp }}">
+				<input type="hidden" name="sql_var_str" value="{{ sql_var_str_tmp }}">
+				<input type="hidden" name="filter_description" value="{{ filter_description }}">
+				<b>Analyze a co-occurrence Quantitative Eligibility Features:</b>:
+				<SELECT id="featureInfo" name="featureInfo">
+					<optgroup label="Please choose a variable to start">
+						{% for name, cui, sty, sty_desc, group, freq in cooccur_freq_output_simple %}
+							<option value = "{{cui}} {{sty}} {{name}}"> {{name}}({{sty}}), {{freq}}</option>
+						{% endfor %}
+					</optgroup>
+				</SELECT>
+				<br>
+				<br>
+				<INPUT type="submit" name="button2" width='200px' value=" Process " onclick="if (check_input()){show_loading();}else return false;">&nbsp;&nbsp;&nbsp;
+				<input type="text" id="hidden_options" name="hidden_options" style="display:none;">
+			</FORM>
 </div>
 {% endif %}
 
