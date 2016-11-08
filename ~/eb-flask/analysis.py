@@ -54,7 +54,7 @@ def _analysis(mysql,g_sty):
         pattern_freq_output_simple.append([str(row[0]),int(row[1]),int(row[2])])
 
     # show the ranking of frequency of co-occurrence cui
-    sql = "select C.cui,C.sty,C.org_str, count(*) as cnt from cancer_cui C join (SELECT DISTINCT V.tid as tid FROM cancer_cui V, meta T where %s and %s) D on C.tid=D.tid and  (C.nested = 'None' or C.nested = 'nesting') group by C.cui,C.sty order by cnt desc limit 100"  % (curr_condition, filter_builder)
+    sql = "select C.cui,C.sty,C.org_str, count(*) as cnt from cancer_cui C join (SELECT DISTINCT V.tid as tid FROM cancer_cui V, meta T where %s and %s) D on C.tid=D.tid and C.task='%s' and  (C.nested = 'None' or C.nested = 'nesting') group by C.cui,C.sty order by cnt desc limit 100"  % (curr_condition, filter_builder, disease)
     print (sql,sql_var)
     cur.execute(sql, sql_var)
     cooccur_freq_output_simple = []
