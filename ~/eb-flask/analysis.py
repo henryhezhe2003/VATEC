@@ -9,7 +9,7 @@ from utils import *
 
 def _analysis(mysql,g_sty):
     disease = flask.request.form['disease']
-    cuisty = str(flask.request.form['featureInfo']).strip().split()
+    cuisty = str(flask.request.form['featureInfo']).strip().split(" ",2)
     cui = cuisty[0]
     sty = cuisty[1]
     name = cuisty[2]
