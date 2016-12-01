@@ -16,8 +16,8 @@ mysql = MySQL()
 application = flask.Flask(__name__)
 
 # Put the credential in the config file
-application.config['MYSQL_DATABASE_USER'] = 'root'
-application.config['MYSQL_DATABASE_PASSWORD'] = 'HeRa@CCI@FSU'
+application.config['MYSQL_DATABASE_USER'] = 'webuser'
+application.config['MYSQL_DATABASE_PASSWORD'] = 'readonly'
 application.config['MYSQL_DATABASE_DB'] = 'cancer'
 application.config['MYSQL_DATABASE_HOST'] = 'somelab12.cci.fsu.edu'
 application.config['MYSQL_DATABASE_PORT'] = 3306
