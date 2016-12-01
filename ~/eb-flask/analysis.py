@@ -33,6 +33,14 @@ def _analysis(mysql,g_sty):
     db = mysql.connect()
     cur = db.cursor()
 
+    num_trials_with_disease_sql = "select count(V.cui), count(distinct V.tid) from cancer_cui V, meta T where %s and %s" %(curr_condition,filter_builder)
+    cur.execute(num_trials_with_disease_sql, sql_var)
+    num_trials_with_disease = ''
+    num_cui_with_disease = ''
+    for row in cur.fetchall():
+        num_cui_with_disease = row[0]
+        num_trials_with_disease = row[1]
+
     #sql = "SELECT distinct V.TID, V.month FROM cancer_cui V, meta T where %s" %(curr_condition) + " and T.tid = V.tid and "+ phase_query + " and "+ status_query + " and "+ study_type_query + " and "+ intervention_type_query + " and "+ agency_type_query + " and "+ gender_query + " and "+ start_date_query + " and "+ age_query + " and "+ intervention_model_query + " and "+ allocation_query + " and "+ time_perspective_query + " and "+ disease_query
     sql = "SELECT V.month,SUM(V.type='INCLUSION'), SUM(V.type='EXCLUSION') FROM cancer_cui V, meta T where %s and %s group by V.month order by month"  % (curr_condition, filter_builder)
     print (sql,sql_var)

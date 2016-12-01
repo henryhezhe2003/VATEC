@@ -554,7 +554,7 @@ function change_option(){
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 <script src="//code.jquery.com/jquery-1.10.2.js"></script>
 <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
-<link rel="stylesheet" href="/resources/demos/style.css">
+<link rel="stylesheet" href="/static/css/style.css">
 <script>
   $(function() {
 	var availableTags = [
@@ -583,7 +583,7 @@ function change_option(){
 	<div id='loadingover' style='display: none;'></div>
 
 <table style="border:1px dotted black;">
-	<tr><td style="border:1px solid blue;">
+	<tr><td style="border:1px solid blue;font-size:20px">
 	<FORM action="{{ url_for('build_query') }}" method="post" onsubmit='showLoading();'>
 
 		Select a condition:
@@ -596,7 +596,7 @@ function change_option(){
 				</optgroup>
 		</SELECT>
 		<br>
-
+{#
 		OR <BR>
 
 		<input type="button" name="answer" value="Type a condition" onclick="showDiv()" style="height: 30px; width: 300px; font-size:10px" />
@@ -612,14 +612,14 @@ function change_option(){
 			<br><br>
 
 		</div>
-
-		<INPUT type="submit" name="button2" style="height: 50px; width: 300px; font-size:20px" value=" Go to condition detail " onclick="if (check_condition()){show_loading();}else return false;">&nbsp;&nbsp;&nbsp;
+ #}
+		<INPUT type="submit" name="button2" style="height: 50px; width: 300px; font-size:15px" value=" Go to condition detail " onclick="if (check_condition()){show_loading();}else return false;">&nbsp;&nbsp;&nbsp;
 		<input type="text" id="hidden_options" name="hidden_options" style="display:none;">
 	</FORM>
 	</td><td style="border:1px solid blue;">
 	<FORM action="{{ url_for('raw_data') }}">
 		<input type="hidden", name="input_tid", value="" >
-		<button type="submit" id="raw_data" name="raw_data" style="height: 80px; width: 300px; font-size:20px"  value="Go to raw data"> Go to raw data </button>
+		<button type="submit" id="raw_data" name="raw_data" style="height: 80px; width: 300px; font-size:15px"  value="Parse Eligibility Criteria by Trial ID"> Parse Eligibility Criteria by Trial ID </button>
 	</FORM>
 	</td></tr></table>
 {%endblock%}

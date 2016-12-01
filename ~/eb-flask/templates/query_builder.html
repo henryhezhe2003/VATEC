@@ -554,7 +554,7 @@ Current condition is {{disease}}
 <div id="result">
 	<div id='loadingmsg' style='display: none;'>Analyzing, please wait...</div>
 	<div id='loadingover' style='display: none;'></div>
-
+	<table border="0"><tr><td>
 	<FORM action="{{ url_for('show_frequent_features') }}" method="post" onsubmit='showLoading();'>
 		<button type="submit" name="button2" style="height: 30px; width: 150px;" onclick="if (check_range()){show_loading();}else return false;"><font size = 2> Show feature list </font></button>
 		<input type="text" id="hidden_options" name="hidden_options" style="display:none;">
@@ -746,7 +746,7 @@ Current condition is {{disease}}
 		<br><br>
 		</table>
 	</FORM>
-
+</td></tr></table>
 </div>
 
 

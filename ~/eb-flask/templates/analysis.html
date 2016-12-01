@@ -478,6 +478,8 @@ function showLoading() {
 	{% if modal_boundary_output_simple %}
 		<b>Condition</b>: {{disease}} <br>
 		<b>Feature</b>: {{featureName}} <br><br>
+		<b>Number of UMLS terms</b>: {{num_cui_with_disease}} <br>
+		<b>Number of Clinical Trials</b>: {{num_trials_with_disease}} <br><br>
 		<b>Filter applied on Clinical Trials</b>:<br>
         {% for key in filter_dict %}
 			<b>{{key}}</b>: {{filter_dict[key]}}<br>
