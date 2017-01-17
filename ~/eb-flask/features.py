@@ -272,7 +272,7 @@ def _show_frequent_features(mysql,g_sty):
         distribution_numeric_features.append((row[2],row[1], row[0],row[3], g_sty[row[1]][3], g_sty[row[1]][1]))
 
     # fetch data for the "drop list menu", only the cui with duration
-    duration_feature_sql = "select V.cui,V.sty,V.cui_str,count(*) as freq from cancer_cui V, meta T where month > 0 and %s group by V.cui,V.sty order by freq desc "  % (filter_builder) + " limit %s "
+    duration_feature_sql = "select V.cui,V.sty,V.cui_str,count(*) as freq from cancer_cui V, meta T where (monthstart >= 0 or monthend >= 0) and %s group by V.cui,V.sty order by freq desc "  % (filter_builder) + " limit %s "
     cur.execute(duration_feature_sql, sql_var + [int(topk)])
     duration_features = []
     for row in cur.fetchall():

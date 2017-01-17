@@ -6,6 +6,7 @@ jinja_environment = jinja2.Environment(autoescape=True, loader=jinja2.FileSystem
 import flask
 from features import attr_str2dict
 from utils import *
+MAX_MONTH = 1000
 
 def _analysis(mysql,g_sty):
     disease = flask.request.form['disease']
@@ -42,15 +43,49 @@ def _analysis(mysql,g_sty):
         num_trials_with_disease = row[1]
 
     #sql = "SELECT distinct V.TID, V.month FROM cancer_cui V, meta T where %s" %(curr_condition) + " and T.tid = V.tid and "+ phase_query + " and "+ status_query + " and "+ study_type_query + " and "+ intervention_type_query + " and "+ agency_type_query + " and "+ gender_query + " and "+ start_date_query + " and "+ age_query + " and "+ intervention_model_query + " and "+ allocation_query + " and "+ time_perspective_query + " and "+ disease_query
-    sql = "SELECT V.month,SUM(V.type='INCLUSION'), SUM(V.type='EXCLUSION') FROM cancer_cui V, meta T where %s and %s group by V.month order by month"  % (curr_condition, filter_builder)
+    sql = "SELECT V.monthstart,V.monthend,SUM(V.type='INCLUSION'), SUM(V.type='EXCLUSION') FROM cancer_cui V, meta T where %s and %s group by V.monthstart,V.monthend order by monthstart,monthend"  % (curr_condition, filter_builder)
     print (sql,sql_var)
     cur.execute(sql, sql_var)
+    monthCount = {}
+    maxMonth = MAX_MONTH
+    for i in range(0,MAX_MONTH): monthCount[i]=[0,0]
+    for row in cur.fetchall():
+        c0 = int(row[0])
+        c1 = int(row[1])
+        c2 = int(row[2])
+        c3 = int(row[3])
+        maxMonth = min(max(c0,c1),MAX_MONTH)
+        if c0 > -1 and c1 > -1:
+            for i in range(c0,c1+1):
+                if i in monthCount:
+                    monthCount[i][0] += c2
+                    monthCount[i][1] += c3
+                else:
+                    monthCount[i][0] = c2
+                    monthCount[i][1] = c3
+        elif c0 > -1:
+            for i in range(c0+1,MAX_MONTH):
+                if i in monthCount:
+                    monthCount[i][0] += c2
+                    monthCount[i][1] += c3
+                else:
+                    monthCount[i][0] = c2
+                    monthCount[i][1] = c3
+        else:
+            for i in range(0,c1+1):
+                if i in monthCount:
+                    monthCount[i][0] += c2
+                    monthCount[i][1] += c3
+                else:
+                    monthCount[i][0] = c2
+                    monthCount[i][1] = c3
     modal_boundary_output_simple = []
     modal_boundary_output_simple.append(["value", "INCLUSION", "EXCLUSION"])
     num_of_trials = 0
-    for row in cur.fetchall():
-        modal_boundary_output_simple.append([str(row[0]),int(row[1]),int(row[2])])
-        num_of_trials += int(row[2])
+    for k in sorted(monthCount.keys()):
+        if k <= maxMonth+1:
+            modal_boundary_output_simple.append([str(k),int(monthCount[k][0]),int(monthCount[k][1])])
+            # num_of_trials += int(row[2])
 
     # pattern distribution
     sql = "SELECT V.pattern, SUM(V.type='INCLUSION'), SUM(V.type='EXCLUSION') as freq FROM cancer_cui V, meta T where %s and %s group by pattern order by freq desc"  % (curr_condition, filter_builder)

@@ -19,13 +19,13 @@ def _raw_data(mysql,diseases_list,g_sty):
 
         raw_data_list = True
         num_umls_term = 0
-        cols_title_str = "Disease,type,pattern,duration,month,negation,sty,cui,org_str,cui_str,sentence"
+        cols_title_str = "Disease,type,pattern,duration,monthstart,monthend,negation,sty,cui,org_str,cui_str,sentence"
         cols_title = cols_title_str.split(",")
         for col in cols_title:
             title_output += "%s</b></td><td><b>" % (col)
         title_output += "</b></td></tr>"
         sql_var = [input_tid]
-        sql_data = "select task,type,pattern,duration,month,neg,sty,cui,org_str,cui_str,sentence from cancer_cui where tid = %s and (nested = 'None' or nested='nesting') "
+        sql_data = "select task,type,pattern,duration,monthstart,monthend,neg,sty,cui,org_str,cui_str,sentence from cancer_cui where tid = %s and (nested = 'None' or nested='nesting') "
         cur.execute(sql_data, sql_var)
         for row in cur.fetchall():
             num_umls_term += 1

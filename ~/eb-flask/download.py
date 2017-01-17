@@ -22,15 +22,15 @@ def _download(mysql):
         if curr_condition != None and filter_builder != None:
             db = mysql.connect()
             cur = db.cursor()
-            sql = "select distinct V.month,V.tid from cancer_cui V, meta T where %s and %s" % (curr_condition, filter_builder)
+            sql = "select distinct V.monthstart,V.monthend,V.tid from cancer_cui V, meta T where %s and %s" % (curr_condition, filter_builder)
             print sql
             cur.execute(sql,sql_var)
             cnt = 1
             for row in cur.fetchall():
-                if csv_result.get(row[0]) == None:
-                    csv_result[row[0]] = row[1]
+                if csv_result.get("%s %s"%(row[0],row[1])) == None:
+                    csv_result["%s %s"%(row[0],row[1])] = row[2]
                 else:
-                    csv_result[row[0]] += ";" + row[1]
+                    csv_result["%s %s"%(row[0],row[1])] += ";" + row[2]
             for key in sorted(csv_result.keys()):
                 yield str(key) + "," + str(csv_result[key]) + '\n'
 
