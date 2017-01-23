@@ -475,10 +475,12 @@ function showLoading() {
 <BR>
 <!--<div id="loading">Processing ...</div>-->
 <div id="result">
-	{% if modal_boundary_output_simple %}
+	{% if modal_density_output_simple %}
 		<b>Condition</b>: {{disease}} <br>
 		<b>Feature</b>: {{featureName}} <br><br>
-		<b>Number of UMLS terms</b>: {{num_cui_with_disease}} <br>
+		<b>Number of UMLS terms</b>: {{num_cui_with_disease}}<br>
+		<b>Number of UMLS terms matched a pattern</b>: {{num_cui_with_pattern}}<br>
+		<b>Number of UMLS terms with temporal constrain</b>: {{num_cui_with_dur}}<br>
 		<b>Number of Clinical Trials</b>: {{num_trials_with_disease}} <br><br>
 		<b>Filter applied on Clinical Trials</b>:<br>
         {% for key in filter_dict %}
@@ -486,16 +488,18 @@ function showLoading() {
         {% endfor %}
         <br>
 
+		<!-- -->
 		<!-- Google chart API -->
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 		<script type="text/javascript">
 			google.charts.load('current', {packages: ['corechart']});
 			google.charts.setOnLoadCallback(drawChart);
 			function drawChart() {
-				
-				var data = new google.visualization.arrayToDataTable({{ modal_boundary_output_simple|safe }});
+
+				// overlap densty function of ULMS terms based on duration (month)
+				var data = new google.visualization.arrayToDataTable({{ modal_density_output_simple|safe }});
 				var options = {
-					title: 'Distribution of number of UMLS terms over month for '  + '{{featureName}}',
+					title: 'Density of UMLS terms over month for '  + '{{featureName}}',
 					curveType: 'function',
 					hAxis: {
 						title: 'Month for ' + '{{featureName}}',
@@ -510,7 +514,7 @@ function showLoading() {
 						format: '####.#'
 					},
 					vAxis: {
-						title: 'Frequency',
+						title: 'Density',
 						minValue: 0,
 						gridlines: {
 							color: '#797979',
@@ -522,6 +526,39 @@ function showLoading() {
 				};
 				var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
 				chart.draw(data, options);
+
+				// distributi
+				var data = new google.visualization.arrayToDataTable({{ modal_boundary_output_simple|safe }});
+				var options = {
+					title: 'Distribution of boundary of duration over month for '  + '{{featureName}}',
+					curveType: 'function',
+					hAxis: {
+						title: 'Month for ' + '{{featureName}}',
+						titleTextStyle: {
+							color: '#333',
+							fontSize: 15
+						},
+						gridlines: {
+							color: '#797979',
+							count: 4
+						},
+						format: '####.#'
+					},
+					vAxis: {
+						title: 'Frequency of boundary',
+						minValue: 0,
+						gridlines: {
+							color: '#797979',
+							count: 5
+						}
+					},
+					explorer: {},
+					isStacked: true
+				};
+				var chart = new google.visualization.ColumnChart(document.getElementById('chart_boundary'));
+				chart.draw(data, options);
+
+
 
 				// distribution of pattern
 				var data = new google.visualization.arrayToDataTable({{ pattern_freq_output_simple|safe }});
@@ -559,8 +596,21 @@ function showLoading() {
 			}
 		</script>
 		<div id="chart_div" style="top: 0px; width: 1100px; height: 500px;"></div>
+		<div id="chart_boundary" style="top: 0px; width: 1100px; height: 500px;"></div>
 		<div id="chart_pattern" style="top: 0px; width: 1100px; height: 500px;"></div>
 		<BR>
+
+		<BR>
+		<b>Top 100 events by frequency according to current term: {{featureName}}</b>
+		<BR>
+		<table border = 1 class="CSSTableGenerator">
+		<tr><td><b>UMLS term</b></td><td><b>CUI</b></td><td><b>Semantic group</b></td><td><b>Semantic type</b></td><td><b>Frequency Prior To</b></td><td><b>Frequency After</b></td></tr>
+		{% for name, cui, sty, sty_desc, group, freq_pt, freq_af in event_freq_output_simple %}
+		<tr><td>{{name}}</td><td>{{cui}}</td><td>{{group}}</td><td>{{sty}} ({{sty_desc}})</td><td>{{freq_pt}}</td><td>{{freq_af}}</td></tr>
+		{% endfor %}
+		</table>
+		<BR>
+
 		<BR>
 		<b>Top 100 terms by frequency that is co-occurrence with the current term: {{featureName}}</b>
 		<BR>
@@ -570,9 +620,9 @@ function showLoading() {
 		{% for name, cui, sty, sty_desc, group, freq in cooccur_freq_output_simple %}
 		<tr><td>{{name}}</td><td>{{cui}}</td><td>{{group}}</td><td>{{sty}} ({{sty_desc}})</td><td>{{freq}}</td></tr>
 		{% endfor %}
-
-
 		</table>
+
+
 			<FORM action="{{ url_for('analysis') }}" method="post" onsubmit='showLoading();'>
 				<input type="hidden" name="disease" value="{{ disease }}">
 				<input type="hidden" name="filter_builder" value="{{ filter_builder_tmp }}">
