@@ -27,10 +27,11 @@ def _download(mysql):
             cur.execute(sql,sql_var)
             cnt = 1
             for row in cur.fetchall():
-                if csv_result.get("%s %s"%(row[0],row[1])) == None:
-                    csv_result["%s %s"%(row[0],row[1])] = row[2]
+                k = "%s,%s"%(row[0],row[1])
+                if csv_result.get(k) == None:
+                    csv_result[k] = row[2]
                 else:
-                    csv_result["%s %s"%(row[0],row[1])] += ";" + row[2]
+                    csv_result[k] += ";" + row[2]
             for key in sorted(csv_result.keys()):
                 yield str(key) + "," + str(csv_result[key]) + '\n'
 
