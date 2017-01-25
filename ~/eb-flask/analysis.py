@@ -34,7 +34,12 @@ def _analysis(mysql,g_sty):
     db = mysql.connect()
     cur = db.cursor()
 
-    num_trials_with_disease_sql = "select count(V.cui), count(distinct V.tid), sum(V.pattern != 'None'),sum(V.durstart > -1 or V.durend > -1) from cancer_cui V, meta T where %s and %s" %(curr_condition,filter_builder)
+    num_trials_with_disease_sql = "select count(V.cui), count(distinct V.tid), sum(V.pattern != 'None'),sum(V.durstart > -1 or V.durend > -1), " +\
+                                  "sum(neg>0 and type = 'INCLUSION'), sum(neg>0 and type = 'EXCLUSION'),  " +\
+                                  "sum(neg>0 and type = 'INCLUSION' and pattern != 'None'), sum(neg>0 and type = 'EXCLUSION' and pattern != 'None'), " +\
+                                  "sum(neg=0 and type = 'INCLUSION'), sum(neg=0 and type = 'EXCLUSION'),  " +\
+                                  "sum(neg=0 and type = 'INCLUSION' and pattern != 'None'), sum(neg=0 and type = 'EXCLUSION' and pattern != 'None') " +\
+                                  "from cancer_cui V, meta T where %s and %s" % (curr_condition,filter_builder)
     cur.execute(num_trials_with_disease_sql, sql_var)
     num_trials_with_disease = ''
     num_cui_with_disease = ''
@@ -43,9 +48,18 @@ def _analysis(mysql,g_sty):
         num_trials_with_disease = row[1]
         num_cui_with_pattern = row[2]
         num_cui_with_dur = row[3]
+        num_cui_neg_inc = row[4]
+        num_cui_neg_exc = row[5]
+        num_cui_neg_inc_patt = row[6]
+        num_cui_neg_exc_patt = row[7]
+        num_cui_noneg_inc = row[8]
+        num_cui_noneg_exc = row[9]
+        num_cui_noneg_inc_patt = row[10]
+        num_cui_noneg_exc_patt = row[11]
 
     #sql = "SELECT distinct V.TID, V.month FROM cancer_cui V, meta T where %s" %(curr_condition) + " and T.tid = V.tid and "+ phase_query + " and "+ status_query + " and "+ study_type_query + " and "+ intervention_type_query + " and "+ agency_type_query + " and "+ gender_query + " and "+ start_date_query + " and "+ age_query + " and "+ intervention_model_query + " and "+ allocation_query + " and "+ time_perspective_query + " and "+ disease_query
-    sql = "SELECT V.monthstart,V.monthend,SUM(V.type='INCLUSION'), SUM(V.type='EXCLUSION') FROM cancer_cui V, meta T where %s and %s group by V.monthstart,V.monthend order by monthstart,monthend"  % (curr_condition, filter_builder)
+    sql = "SELECT V.monthstart,V.monthend,SUM(V.type='INCLUSION'), SUM(V.type='EXCLUSION') " \
+          "FROM cancer_cui V, meta T where %s and %s group by V.monthstart,V.monthend order by monthstart,monthend"  % (curr_condition, filter_builder)
     print (sql,sql_var)
     cur.execute(sql, sql_var)
     monthCount = {}

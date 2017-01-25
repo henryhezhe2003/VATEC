@@ -601,6 +601,16 @@ function showLoading() {
 		<BR>
 
 		<BR>
+		<b>Negation information according to current term: {{featureName}}</b>
+		<table border = 1 class="CSSTableGenerator">
+		<tr><td><b>  </b></td><td><b>Inclusion (with pattern)</b></td><td><b>Exclusion (with pattern)</b></td></tr>
+		<tr><td>Negation</td><td>{{num_cui_neg_inc}} ({{num_cui_neg_inc_patt}})</td><td>{{num_cui_neg_exc}} ({{num_cui_neg_exc_patt}})</td></tr>
+		<tr><td>Non-negation</td><td>{{num_cui_noneg_inc}} ({{num_cui_noneg_inc_patt}})</td><td>{{num_cui_noneg_exc}} ({{num_cui_noneg_exc_patt}})</td></tr>
+		</table>
+		<BR>
+
+
+		<BR>
 		<b>Top 100 events by frequency according to current term: {{featureName}}</b>
 		<BR>
 		<table border = 1 class="CSSTableGenerator">
